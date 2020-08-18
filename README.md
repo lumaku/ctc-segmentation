@@ -1,13 +1,21 @@
 # CTC segmentation
 
 
+CTC segmentation can be used to find utterances alignments within large audio files.
+
 * This repository contains the `ctc-segmentation` python package.
 * The complete code is in https://github.com/cornerfarmer/ctc_segmentation
 * A description of the algorithm is in https://arxiv.org/abs/2007.09127
 
 # Example Code
 
+1. `prepare_text` filters characters not in the dictionary, and generates the character matrix.
+2. `ctc_segmentation` computes character-wise alignments from CTC activations of an already trained CTC-based network.
+3. `determine_utterance_segments` converts char-wise alignments to utterance-wise alignments.
+4. In a post-processing step, segments may be filtered by their confidence value.
+
 This code is from `asr_align.py` of the ESPnet toolkit:
+
 
 ```python
 from ctc_segmentation import ctc_segmentation
@@ -17,7 +25,11 @@ from ctc_segmentation import prepare_text
 
 ...
 
+
+config = CtcSegmentationParameters()
 char_list = train_args.char_list
+config.blank = char_list[0]
+
 for idx, name in enumerate(js.keys(), 1):
     logging.info("(%d/%d) Aligning " + name, idx, len(js.keys()))
     batch = [(name, js[name])]
