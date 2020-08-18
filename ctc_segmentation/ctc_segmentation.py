@@ -15,11 +15,11 @@ import logging
 import numpy as np
 # import for table of character probabilities mapped to time
 try:
-    from ctc_segmentation_dyn import cython_fill_table
+    from .ctc_segmentation_dyn import cython_fill_table
 except ImportError:
     import pyximport
     pyximport.install(setup_args={"include_dirs": np.get_include()})
-    from ctc_segmentation_dyn import cython_fill_table
+    from .ctc_segmentation_dyn import cython_fill_table
 
 
 class CtcSegmentationParameters:

@@ -6,8 +6,12 @@ try:
 except ImportError:
     USE_CYTHON = False
 
+
 ext = '.pyx' if USE_CYTHON else '.c'
-extensions = [Extension("ctc_segmentation_dyn", ["ctc_segmentation"+ext])]
+extensions = [
+    Extension("ctc_segmentation/ctc_segmentation_dyn",
+              ["ctc_segmentation/ctc_segmentation_dyn"+ext],
+              include_dirs=[numpy.get_include()])]
 if USE_CYTHON:
     from Cython.Build import cythonize
     extensions = cythonize(extensions, include_path=[numpy.get_include()])
@@ -16,9 +20,11 @@ if USE_CYTHON:
 setup(
     name="ctc_segmentation",
     version="1.0",
+    python_requires='>=3',
     packages=find_packages(exclude=["tests"]),
 
     install_requires=["setuptools", "numpy", "Cython"],
+    # tests_require=["torch"],
     zip_safe=False,
 
     ext_modules=extensions,
