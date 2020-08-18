@@ -1,13 +1,13 @@
 # CTC segmentation
 
 
-This repository contains the `ctc-segmentation` python package.
-The complete code is in https://github.com/cornerfarmer/ctc_segmentation
-A description of the algorithm is in https://arxiv.org/abs/2007.09127
+* This repository contains the `ctc-segmentation` python package.
+* The complete code is in https://github.com/cornerfarmer/ctc_segmentation
+* A description of the algorithm is in https://arxiv.org/abs/2007.09127
 
 # Example Code
 
-This code is from `asr_align.py``of the ESPnet toolkit:
+This code is from `asr_align.py` of the ESPnet toolkit:
 
 ```python
 from ctc_segmentation import ctc_segmentation
