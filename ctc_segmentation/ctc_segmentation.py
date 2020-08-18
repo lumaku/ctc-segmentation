@@ -1,4 +1,4 @@
-#!/usr/bin/env false
+#!/usr/bin/env python3
 # encoding: utf-8
 
 # Copyright 2020, Technische Universität München; Dominik Winkelbauer, Ludwig Kürzinger
@@ -32,9 +32,6 @@ class CtcSegmentationParameters:
     or the Greek char "ε", adapt these settings. If the blank token is not set
     as "_", adjust the setting.
     """
-
-    def __init__(self):
-        pass
 
     max_prob = -10000000000.0
     skip_prob = -10000000000.0
