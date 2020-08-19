@@ -74,10 +74,14 @@ There are several notable parameters to adjust the working of the algorithm:
 
 * `min_window_size`: Minimum window size considered for a single utterance. The current default value should be OK in most cases.
 
+* Localization: The character set is taken from the model dict, i.e., usually are generated with SentencePiece. An ASR model trained in the corresponding language and character set is needed. For asian languages, no changes to the CTC segmentation parameters should be necessary. One exception: If the character set contains any punctuation characters, "#", or the Greek char "ε", adapt the setting in an instance of `CtcSegmentationParameters` in `segmentation.py`.
+
+* `CtcSegmentationParameters` includes a blank character. Copy over the Blank character from the dictionary to the configuration, if in the model dictionary e.g. "\<blank>" instead of the default "_" is used. If the Blank in the configuration and in the dictionary mismatch, the algorithm raises an IndexError at backtracking.
+
 Two parameters are needed to correctly map the frame indices to a time stamp in seconds:
+
 * `subsampling_factor`: If the encoder sub-samples its input, the number of frames at the CTC layer is reduced by this factor. A BLSTMP encoder with subsampling 1_2_2_1_1 has a subsampling factor of 4. 
 * `frame_duration`: This is the non-overlapping duration of a single frame in milliseconds (the inverse of frames per millisecond).
-* Localization: The character set is taken from the model dict, i.e., usually are generated with SentencePiece. An ASR model trained in the corresponding language and character set is needed. For asian languages, no changes to the CTC segmentation parameters should be necessary. One exception: If the character set contains any punctuation characters, "#", or the Greek char "ε", adapt the setting in an instance of `CtcSegmentationParameters` in `segmentation.py`.
 
 
 # Reference
@@ -85,7 +89,7 @@ Two parameters are needed to correctly map the frame indices to a time stamp in 
 ```
 @misc{ctcsegmentation,
     title={CTC-Segmentation of Large Corpora for German End-to-end Speech Recognition},
-    author={Ludwig Kürzinger and Dominik Winkelbauer and Lujun Li and Tobias Watzel and Gerhard Rigoll},
+    author={Ludwig K{\u}rzinger and Dominik Winkelbauer and Lujun Li and Tobias Watzel and Gerhard Rigoll},
     year={2020},
     eprint={2007.09127},
     archivePrefix={arXiv},
