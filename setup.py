@@ -16,10 +16,22 @@ if USE_CYTHON:
     from Cython.Build import cythonize
     extensions = cythonize(extensions, include_path=[numpy.get_include()])
 
+package_information = """
+# CTC segmentation
+
+CTC segmentation is used to align utterances within audio files.
+It can be combined with CTC-based ASR models.
+This package includes the core functions.
+
+https://github.com/lumaku/ctc-segmentation
+"""
+
+
 
 setup(
     name="ctc_segmentation",
-    version="1.0.2",
+    version="1.0.3",
+
     python_requires='>=3',
     packages=find_packages(exclude=["tests"]),
     install_requires=["setuptools", "numpy", "Cython"],
@@ -34,12 +46,5 @@ setup(
     url="https://github.com/lumaku/ctc-segmentation",
 
     long_description_content_type="text/markdown",
-    long_description="""# CTC segmentation
-    
-    CTC segmentation is used to align utterances within audio files.
-    It can be combined with CTC-based ASR models. 
-    This package includes the core functions.
-    
-    https://github.com/lumaku/ctc-segmentation
-    """
+    long_description=package_information,
 )
