@@ -9,7 +9,7 @@ except ImportError:
 # https://cython.readthedocs.io/en/latest/src/userguide/source_files_and_compilation.html
 ext = '.pyx' if USE_CYTHON else '.c'
 extensions = [
-    Extension("ctc_segmentation_dyn",
+    Extension("ctc_segmentation/ctc_segmentation_dyn",
               ["ctc_segmentation/ctc_segmentation_dyn"+ext],
               include_dirs=[numpy.get_include()])]
 if USE_CYTHON:
