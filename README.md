@@ -61,6 +61,24 @@ for idx, name in enumerate(js.keys(), 1):
         args.output.write(utt_segment)
 ```
 
+After the segments are written to a `segments` file, they can be filtered with the parameter `min_confidence_score`. This is minium confidence score in log space as described in the paper. Utterances with a low confidence score are discarded. This parameter may need adjustment depending on dataset, ASR model and language. For the german ASR model, a value of -1.5 worked very well, but for TEDlium, a lower value of about -5.0 seemed more practical.
+
+```bash
+awk -v ms=${min_confidence_score} '{ if ($5 > ms) {print} }' ${unfiltered} > ${filtered}
+```
+
+# Parameters
+
+There are several notable parameters to adjust the working of the algorithm:
+
+
+* `min_window_size`: Minimum window size considered for a single utterance. The current default value should be OK in most cases.
+
+Two parameters are needed to correctly map the frame indices to a time stamp in seconds:
+* `subsampling_factor`: If the encoder sub-samples its input, the number of frames at the CTC layer is reduced by this factor. A BLSTMP encoder with subsampling 1_2_2_1_1 has a subsampling factor of 4. 
+* `frame_duration`: This is the non-overlapping duration of a single frame in milliseconds (the inverse of frames per millisecond).
+* Localization: The character set is taken from the model dict, i.e., usually are generated with SentencePiece. An ASR model trained in the corresponding language and character set is needed. For asian languages, no changes to the CTC segmentation parameters should be necessary. One exception: If the character set contains any punctuation characters, "#", or the Greek char "ε", adapt the setting in an instance of `CtcSegmentationParameters` in `segmentation.py`.
+
 
 # Reference
 
