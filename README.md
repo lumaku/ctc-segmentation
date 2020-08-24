@@ -89,7 +89,7 @@ Two parameters are needed to correctly map the frame indices to a time stamp in 
 ```
 @misc{ctcsegmentation,
     title={CTC-Segmentation of Large Corpora for German End-to-end Speech Recognition},
-    author={Ludwig K{\u}rzinger and Dominik Winkelbauer and Lujun Li and Tobias Watzel and Gerhard Rigoll},
+    author={Ludwig K{\"u}rzinger and Dominik Winkelbauer and Lujun Li and Tobias Watzel and Gerhard Rigoll},
     year={2020},
     eprint={2007.09127},
     archivePrefix={arXiv},

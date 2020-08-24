@@ -10,8 +10,8 @@ except ImportError:
 ext = '.pyx' if USE_CYTHON else '.c'
 extensions = [
     Extension("ctc_segmentation/ctc_segmentation_dyn",
-              ["ctc_segmentation/ctc_segmentation_dyn"+ext],
-              include_dirs=[numpy.get_include()])]
+             ["ctc_segmentation/ctc_segmentation_dyn"+ext],
+             include_dirs=[numpy.get_include()])]
 if USE_CYTHON:
     from Cython.Build import cythonize
     extensions = cythonize(extensions, include_path=[numpy.get_include()])
@@ -28,7 +28,7 @@ https://github.com/lumaku/ctc-segmentation
 
 setup(
     name="ctc_segmentation",
-    version="1.0.4",
+    version="1.0.5",
 
     python_requires='>=3',
     packages=find_packages(exclude=["tests"]),
