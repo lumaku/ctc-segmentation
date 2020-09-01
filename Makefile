@@ -2,7 +2,8 @@
 
 all:
 	cythonize -3 ctc_segmentation/ctc_segmentation_dyn.pyx
-	python -m setuptools.launch setup.py sdist
+	python setup.py sdist
+	# python -m setuptools.launch setup.py sdist
 
 clean:
 	rm ctc_segmentation/ctc_segmentation_dyn.c || echo "already clean?"
