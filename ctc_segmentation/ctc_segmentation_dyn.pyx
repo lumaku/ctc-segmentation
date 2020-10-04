@@ -1,5 +1,6 @@
 #!/usr/bin/env false
 # encoding: utf-8
+#cython: language_level=3
 
 # Copyright 2020, Technische Universität München; Dominik Winkelbauer, Ludwig Kürzinger
 #  Apache 2.0  (http://www.apache.org/licenses/LICENSE-2.0)
