@@ -9,16 +9,20 @@ CTC segmentation can be used to find utterances alignments within large audio fi
 
 # Installation
 
-For an installation with `pip`:
-
+* With `pip`:
 ```sh
 pip install ctc-segmentation
 ```
 
-On Arch Linux with your favourite AUR helper (here: `trizen`):
+* From the Arch Linux AUR as `python-ctc-segmentation-git` using your favourite AUR helper.
 
+* From source:
 ```sh
-trizen -S python-ctc-segmentation-git
+git clone https://github.com/lumaku/ctc-segmentation
+cd ctc-segmentation
+cythonize -3 ctc_segmentation/ctc_segmentation_dyn.pyx
+python setup.py build
+python setup.py install --optimize=1 --skip-build
 ```
 
 # Example Code
