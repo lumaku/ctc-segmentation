@@ -9,7 +9,7 @@ CTC segmentation can be used to find utterances alignments within large audio fi
 
 # Installation
 
-For an installation wwith `pip`:
+For an installation with `pip`:
 
 ```sh
 pip install ctc-segmentation
