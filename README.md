@@ -1,11 +1,25 @@
 # CTC segmentation
 
-
 CTC segmentation can be used to find utterances alignments within large audio files.
 
 * This repository contains the `ctc-segmentation` python package.
-* The complete code is in https://github.com/cornerfarmer/ctc_segmentation
 * A description of the algorithm is in https://arxiv.org/abs/2007.09127
+* The code used in the paper is archived in https://github.com/cornerfarmer/ctc_segmentation
+* If you want to make modifications or improvements to the algorithm, open an issue or you can also send an email/message to me (email address on paper) to discuss improvements or send a pull request.
+
+# Installation
+
+For an installation wwith `pip`:
+
+```sh
+pip install ctc-segmentation
+```
+
+On Arch Linux with your favourite AUR helper (here: `trizen`):
+
+```sh
+trizen -S python-ctc-segmentation-git
+```
 
 # Example Code
 
@@ -24,7 +38,6 @@ from ctc_segmentation import determine_utterance_segments
 from ctc_segmentation import prepare_text
 
 ...
-
 
 config = CtcSegmentationParameters()
 char_list = train_args.char_list
@@ -67,6 +80,7 @@ After the segments are written to a `segments` file, they can be filtered with t
 awk -v ms=${min_confidence_score} '{ if ($5 > ms) {print} }' ${unfiltered} > ${filtered}
 ```
 
+
 # Parameters
 
 There are several notable parameters to adjust the working of the algorithm:
@@ -86,13 +100,24 @@ Two parameters are needed to correctly map the frame indices to a time stamp in 
 
 # Reference
 
+The full paper can be found in the preprint https://arxiv.org/abs/2007.09127 or published at https://doi.org/10.1007/978-3-030-60276-5_27. To cite this work:
+
 ```
-@misc{ctcsegmentation,
-    title={CTC-Segmentation of Large Corpora for German End-to-end Speech Recognition},
-    author={Ludwig K{\"u}rzinger and Dominik Winkelbauer and Lujun Li and Tobias Watzel and Gerhard Rigoll},
-    year={2020},
-    eprint={2007.09127},
-    archivePrefix={arXiv},
-    primaryClass={eess.AS}
+@InProceedings{ctcsegmentation,
+author="K{\"u}rzinger, Ludwig
+and Winkelbauer, Dominik
+and Li, Lujun
+and Watzel, Tobias
+and Rigoll, Gerhard",
+editor="Karpov, Alexey
+and Potapova, Rodmonga",
+title="CTC-Segmentation of Large Corpora for German End-to-End Speech Recognition",
+booktitle="Speech and Computer",
+year="2020",
+publisher="Springer International Publishing",
+address="Cham",
+pages="267--278",
+abstract="Recent end-to-end Automatic Speech Recognition (ASR) systems demonstrated the ability to outperform conventional hybrid DNN/HMM ASR. Aside from architectural improvements in those systems, those models grew in terms of depth, parameters and model capacity. However, these models also require more training data to achieve comparable performance.",
+isbn="978-3-030-60276-5"
 }
 ```
