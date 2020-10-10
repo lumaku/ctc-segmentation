@@ -45,6 +45,7 @@ class CtcSegmentationParameters:
     self_transition = "ε"
     start_of_ground_truth = "#"
     excluded_characters = ".,-?!:»«;'›‹()"
+    char_list = None
 
     @property
     def index_duration_in_seconds(self):
@@ -127,7 +128,8 @@ def ctc_segmentation(config, lpz, ground_truth):
                                 offsets[c] + t
                             ) * config.index_duration_in_seconds
                         char_probs[offsets[c] + t] = max_lpz_prob
-                        state_list[offsets[c] + t] = state_list[ground_truth[c, min_s]]
+                        char_index = ground_truth[c, min_s]
+                        state_list[offsets[c] + t] = config.char_list[char_index]
                     c -= 1 + min_s
                     t -= 1 - offset
                 else:
@@ -152,7 +154,7 @@ def ctc_segmentation(config, lpz, ground_truth):
     return timings, char_probs, state_list
 
 
-def prepare_text(config, text, char_list):
+def prepare_text(config, text, char_list=None):
     """Prepare the given text for CTC segmentation.
 
     Creates a matrix of character symbols to represent the given text,
@@ -164,7 +166,9 @@ def prepare_text(config, text, char_list):
                         characters not included in this list are ignored
     :return: label matrix, character index matrix
     """
-    logging.debug(f"Blank character: {char_list[0]} == {config.blank}")
+    if char_list is not None:
+        config.char_list = char_list
+    logging.debug(f"Blank character: {config.char_list[0]} == {config.blank}")
     ground_truth = config.start_of_ground_truth
     utt_begin_indices = []
     for utt in text:
@@ -178,14 +182,14 @@ def prepare_text(config, text, char_list):
             if char.isspace():
                 if ground_truth[-1] != config.space:
                     ground_truth += config.space
-            elif char in char_list and char not in config.excluded_characters:
+            elif char in config.char_list and char not in config.excluded_characters:
                 ground_truth += char
     # Add space to the end
     if ground_truth[-1] != config.space:
         ground_truth += config.space
     utt_begin_indices.append(len(ground_truth) - 1)
     # Create matrix: time frame x number of letters the character symbol spans
-    max_char_len = max([len(c) for c in char_list])
+    max_char_len = max([len(c) for c in config.char_list])
     ground_truth_mat = np.ones([len(ground_truth), max_char_len], np.int) * -1
     for i in range(len(ground_truth)):
         for s in range(max_char_len):
@@ -193,8 +197,8 @@ def prepare_text(config, text, char_list):
                 continue
             span = ground_truth[i - s : i + 1]
             span = span.replace(config.space, config.blank)
-            if span in char_list:
-                ground_truth_mat[i, s] = char_list.index(span)
+            if span in config.char_list:
+                ground_truth_mat[i, s] = config.char_list.index(span)
     return ground_truth_mat, utt_begin_indices
 
 

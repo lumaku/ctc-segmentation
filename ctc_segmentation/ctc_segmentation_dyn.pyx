@@ -40,8 +40,8 @@ def cython_fill_table(np.ndarray[np.float32_t, ndim=2] table,
     cdef int higher_offset
     cdef float switch_prob, stay_prob, skip_prob
     cdef float prob_max = -1000000000
-    cdef float lastMax
-    cdef int lastArgMax
+    cdef float last_max
+    cdef int last_arg_max
     cdef np.ndarray[np.int_t, ndim=1] cur_offset = np.zeros([ground_truth.shape[1]], np.int) - 1
     cdef float max_lpz_prob
     cdef float p
