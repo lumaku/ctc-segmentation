@@ -20,7 +20,8 @@ def test_ctc_segmentation():
     Only executes CTC segmentation, does not check its result.
     """
     config = CtcSegmentationParameters()
-    config.min_window_size = 10
+    config.min_window_size = 20
+    config.max_window_size = 50
     char_list = [config.blank, "a", "c", "d", "g", "o", "s", "t"]
     text = ["catzz#\n", "dogs!!\n"]
     # lpz = torch.nn.functional.log_softmax(torch.rand(30, 8) * 10, dim=0).numpy()
