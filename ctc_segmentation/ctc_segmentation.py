@@ -13,11 +13,13 @@ For a description, see https://arxiv.org/abs/2007.09127
 
 import logging
 import numpy as np
+
 # import for table of character probabilities mapped to time
 try:
     from .ctc_segmentation_dyn import cython_fill_table
 except ImportError:
     import pyximport
+
     pyximport.install(setup_args={"include_dirs": np.get_include()})
     from .ctc_segmentation_dyn import cython_fill_table
 
@@ -44,7 +46,8 @@ class CtcSegmentationParameters:
     blank = "▁"
     self_transition = "ε"
     start_of_ground_truth = "#"
-    excluded_characters = ".,-?!:»«;'›‹()"
+    excluded_characters = ".,-?!:»«;'›‹<>()"
+    include_dict_chars = False
     char_list = None
 
     @property
@@ -168,6 +171,16 @@ def prepare_text(config, text, char_list=None):
     """
     if char_list is not None:
         config.char_list = char_list
+    logging.debug(config.char_list)
+    if config.include_dict_chars:
+        config.excluded_characters = "".join(
+            [
+                char
+                for char in config.excluded_characters
+                if True not in [char == j for j in config.char_list]
+            ]
+        )
+    logging.debug(f"Excluded characters: {config.excluded_characters}")
     logging.debug(f"Blank character: {config.char_list[0]} == {config.blank}")
     ground_truth = config.start_of_ground_truth
     utt_begin_indices = []
@@ -195,7 +208,7 @@ def prepare_text(config, text, char_list=None):
         for s in range(max_char_len):
             if i - s < 0:
                 continue
-            span = ground_truth[i - s : i + 1]
+            span = ground_truth[i - s: i + 1]
             span = span.replace(config.space, config.blank)
             if span in config.char_list:
                 ground_truth_mat[i, s] = config.char_list.index(span)
@@ -242,6 +255,6 @@ def determine_utterance_segments(config, utt_begin_indices, char_probs, timings,
         else:
             min_avg = 0
             for t in range(start_t, end_t - n):
-                min_avg = min(min_avg, char_probs[t : t + n].mean())
+                min_avg = min(min_avg, char_probs[t: t + n].mean())
         segments.append((start, end, min_avg))
     return segments
