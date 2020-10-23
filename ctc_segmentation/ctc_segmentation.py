@@ -42,18 +42,29 @@ class CtcSegmentationParameters:
     subsampling_factor = 1
     frame_duration_ms = 10
     score_min_mean_over_L = 30
-    space = " "
+    space = "·"
     blank = "▁"
+    replace_spaces_with_blanks = True
     self_transition = "ε"
     start_of_ground_truth = "#"
-    excluded_characters = ".,-?!:»«;'›‹<>()"
-    include_dict_chars = False
+    excluded_characters = ".,-?!:»«;'›‹<>()•❍·"
     char_list = None
 
     @property
     def index_duration_in_seconds(self):
         """Automatically derive index duration from frame duration and subsampling."""
         return self.frame_duration_ms * self.subsampling_factor / 1000
+
+    def update_exluded_characters(self):
+        """Chars in char list are removed from the list of excluded characters."""
+        self.excluded_characters = "".join(
+            [
+                char
+                for char in self.excluded_characters
+                if True not in [char == j for j in self.char_list]
+            ]
+        )
+        logging.debug(f"Excluded characters: {self.excluded_characters}")
 
 
 def ctc_segmentation(config, lpz, ground_truth):
@@ -171,35 +182,26 @@ def prepare_text(config, text, char_list=None):
     """
     if char_list is not None:
         config.char_list = char_list
-    logging.debug(config.char_list)
-    if config.include_dict_chars:
-        config.excluded_characters = "".join(
-            [
-                char
-                for char in config.excluded_characters
-                if True not in [char == j for j in config.char_list]
-            ]
-        )
-    logging.debug(f"Excluded characters: {config.excluded_characters}")
     logging.debug(f"Blank character: {config.char_list[0]} == {config.blank}")
     ground_truth = config.start_of_ground_truth
     utt_begin_indices = []
     for utt in text:
         # One space in-between
-        if ground_truth[-1] != config.space:
+        if not ground_truth.endswith(config.space):
             ground_truth += config.space
         # Start new utterance remember index
         utt_begin_indices.append(len(ground_truth) - 1)
         # Add chars of utterance
         for char in utt:
-            if char.isspace():
-                if ground_truth[-1] != config.space:
+            if char.isspace() and config.replace_spaces_with_blanks:
+                if not ground_truth.endswith(config.space):
                     ground_truth += config.space
             elif char in config.char_list and char not in config.excluded_characters:
                 ground_truth += char
     # Add space to the end
-    if ground_truth[-1] != config.space:
+    if not ground_truth.endswith(config.space):
         ground_truth += config.space
+    logging.debug(f"ground_truth: {ground_truth}")
     utt_begin_indices.append(len(ground_truth) - 1)
     # Create matrix: time frame x number of letters the character symbol spans
     max_char_len = max([len(c) for c in config.char_list])
@@ -208,10 +210,11 @@ def prepare_text(config, text, char_list=None):
         for s in range(max_char_len):
             if i - s < 0:
                 continue
-            span = ground_truth[i - s: i + 1]
+            span = ground_truth[i - s : i + 1]
             span = span.replace(config.space, config.blank)
             if span in config.char_list:
-                ground_truth_mat[i, s] = config.char_list.index(span)
+                char_index = config.char_list.index(span)
+                ground_truth_mat[i, s] = char_index
     return ground_truth_mat, utt_begin_indices
 
 
@@ -255,6 +258,6 @@ def determine_utterance_segments(config, utt_begin_indices, char_probs, timings,
         else:
             min_avg = 0
             for t in range(start_t, end_t - n):
-                min_avg = min(min_avg, char_probs[t: t + n].mean())
+                min_avg = min(min_avg, char_probs[t : t + n].mean())
         segments.append((start, end, min_avg))
     return segments
