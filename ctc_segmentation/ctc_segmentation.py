@@ -45,6 +45,7 @@ class CtcSegmentationParameters:
     space = "·"
     blank = "▁"
     replace_spaces_with_blanks = True
+    blank_transition_cost_zero = False
     self_transition = "ε"
     start_of_ground_truth = "#"
     excluded_characters = ".,-?!:»«;'›‹<>()•❍·"
@@ -54,6 +55,12 @@ class CtcSegmentationParameters:
     def index_duration_in_seconds(self):
         """Automatically derive index duration from frame duration and subsampling."""
         return self.frame_duration_ms * self.subsampling_factor / 1000
+
+    @property
+    def flags(self):
+        """Configuration flags to pass to the table_fill operation."""
+        flags = int(self.blank_transition_cost_zero)
+        return flags
 
     def update_exluded_characters(self):
         """Chars in char list are removed from the list of excluded characters."""
@@ -96,7 +103,12 @@ def ctc_segmentation(config, lpz, ground_truth):
         offsets = np.zeros([len(ground_truth)], dtype=np.int)
         # Run actual alignment of utterances
         t, c = cython_fill_table(
-            table, lpz.astype(np.float32), np.array(ground_truth), offsets, blank
+            table,
+            lpz.astype(np.float32),
+            np.array(ground_truth),
+            offsets,
+            blank,
+            config.flags
         )
         logging.debug(
             f"Max. joint probability to align text to audio: "

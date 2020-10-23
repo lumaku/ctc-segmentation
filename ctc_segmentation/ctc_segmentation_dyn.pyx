@@ -21,7 +21,8 @@ def cython_fill_table(np.ndarray[np.float32_t, ndim=2] table,
                       np.ndarray[np.float32_t, ndim=2] lpz,
                       np.ndarray[np.int_t, ndim=2] ground_truth,
                       np.ndarray[np.int_t, ndim=1] offsets,
-                      int blank):
+                      int blank,
+                      int flags):
     """Fill the table of transition probabilities.
 
     :param table: table filled with maximum joint probabilities k_{t,j}
@@ -29,6 +30,7 @@ def cython_fill_table(np.ndarray[np.float32_t, ndim=2] table,
     :param ground_truth: label sequence
     :param offsets: window offsets per character (given as array of zeros)
     :param blank: label ID of the blank symbol, usually 0
+    :param flags: configuration options, default 0
     :return:
     """
     cdef int c
@@ -46,6 +48,7 @@ def cython_fill_table(np.ndarray[np.float32_t, ndim=2] table,
     cdef float max_lpz_prob
     cdef float p
     cdef int s
+    cdef int stay_transition_cost_zero
 
     # Compute the mean offset between two window positions
     mean_offset = (lpz.shape[0] - table.shape[0]) / float(table.shape[1])
@@ -69,6 +72,8 @@ def cython_fill_table(np.ndarray[np.float32_t, ndim=2] table,
         offsets[c] = offset_sum
         last_arg_max = -1
         last_max = 0
+        # flag for setting stay transition cost to zero for blank
+        stay_transition_cost_zero = (flags & 1) * int(np.any(ground_truth[c, :] == 0))
         # Go through all rows of the current column
         for t in range((1 if c == 0 else 0), table.shape[0]):
             # Compute max switch probability
@@ -87,6 +92,8 @@ def cython_fill_table(np.ndarray[np.float32_t, ndim=2] table,
                 stay_prob = prob_max
             elif c == 0:
                 stay_prob = 0
+            elif stay_transition_cost_zero:
+                stay_prob = table[t - 1, c]
             else:
                 stay_prob = table[t - 1, c] + max(lpz[t + offset_sum, blank], max_lpz_prob)
             # Use max of stay and switch prob

@@ -96,6 +96,10 @@ There are several notable parameters to adjust the working of the algorithm:
 
 * `CtcSegmentationParameters` includes a blank character. Copy over the Blank character from the dictionary to the configuration, if in the model dictionary e.g. "\<blank>" instead of the default "_" is used. If the Blank in the configuration and in the dictionary mismatch, the algorithm raises an IndexError at backtracking.
 
+* If `replace_spaces_with_blanks` is True, then spaces in the ground truth sequence are replaces by blanks. This option is enabled by default and improves compability with dictionaries with unknown space characters.
+
+* To align utterances with longer unkown audio sections between them, use `blank_transition_cost_zero` (default: False). With this option, the stay transition in the blank state is free. A transition to the next character is only consumed if the probability to switch is higher. Caution: in combination with `replace_spaces_with_blanks == True`, this may lead to misaligned segments.
+
 Two parameters are needed to correctly map the frame indices to a time stamp in seconds:
 
 * `subsampling_factor`: If the encoder sub-samples its input, the number of frames at the CTC layer is reduced by this factor. A BLSTMP encoder with subsampling 1_2_2_1_1 has a subsampling factor of 4. 

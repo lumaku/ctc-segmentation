@@ -1404,6 +1404,9 @@ static void __Pyx_RaiseBufferIndexError(int axis);
 static CYTHON_INLINE long __Pyx_div_long(long, long);
 
 #define __Pyx_BufPtrStrided1d(type, buf, i0, s0) (type)((char*)buf + i0 * s0)
+/* PyIntCompare.proto */
+static CYTHON_INLINE PyObject* __Pyx_PyInt_EqObjC(PyObject *op1, PyObject *op2, long intval, long inplace);
+
 /* GetItemInt.proto */
 #define __Pyx_GetItemInt(o, i, type, is_signed, to_py_func, is_list, wraparound, boundscheck)\
     (__Pyx_fits_Py_ssize_t(i, type, is_signed) ?\
@@ -1750,6 +1753,7 @@ static const char __pyx_k_p[] = "p";
 static const char __pyx_k_s[] = "s";
 static const char __pyx_k_t[] = "t";
 static const char __pyx_k_np[] = "np";
+static const char __pyx_k_any[] = "any";
 static const char __pyx_k_int[] = "int";
 static const char __pyx_k_lpz[] = "lpz";
 static const char __pyx_k_main[] = "__main__";
@@ -1757,6 +1761,7 @@ static const char __pyx_k_name[] = "__name__";
 static const char __pyx_k_test[] = "__test__";
 static const char __pyx_k_blank[] = "blank";
 static const char __pyx_k_debug[] = "debug";
+static const char __pyx_k_flags[] = "flags";
 static const char __pyx_k_numpy[] = "numpy";
 static const char __pyx_k_range[] = "range";
 static const char __pyx_k_table[] = "table";
@@ -1783,6 +1788,7 @@ static const char __pyx_k_max_lpz_prob[] = "max_lpz_prob";
 static const char __pyx_k_higher_offset[] = "higher_offset";
 static const char __pyx_k_cython_fill_table[] = "cython_fill_table";
 static const char __pyx_k_cline_in_traceback[] = "cline_in_traceback";
+static const char __pyx_k_stay_transition_cost_zero[] = "stay_transition_cost_zero";
 static const char __pyx_k_Average_character_duration[] = "Average character duration: ";
 static const char __pyx_k_numpy_core_multiarray_failed_to[] = "numpy.core.multiarray failed to import";
 static const char __pyx_k_CTC_segmentation_This_file_is_pa[] = "CTC segmentation.\n\nThis file is part of CTC segmentation to extract utterance alignments\nwithin an audio file using dynamic programming.\nFor a description, see https://arxiv.org/abs/2007.09127\n";
@@ -1791,6 +1797,7 @@ static const char __pyx_k_numpy_core_umath_failed_to_impor[] = "numpy.core.umath
 static const char __pyx_k_ctc_segmentation_ctc_segmentatio_2[] = "ctc_segmentation.ctc_segmentation_dyn";
 static PyObject *__pyx_kp_u_Average_character_duration;
 static PyObject *__pyx_n_s_ImportError;
+static PyObject *__pyx_n_s_any;
 static PyObject *__pyx_n_s_argmax;
 static PyObject *__pyx_n_s_blank;
 static PyObject *__pyx_n_s_c;
@@ -1800,6 +1807,7 @@ static PyObject *__pyx_n_s_ctc_segmentation_ctc_segmentatio_2;
 static PyObject *__pyx_n_s_cur_offset;
 static PyObject *__pyx_n_s_cython_fill_table;
 static PyObject *__pyx_n_s_debug;
+static PyObject *__pyx_n_s_flags;
 static PyObject *__pyx_n_s_ground_truth;
 static PyObject *__pyx_n_s_higher_offset;
 static PyObject *__pyx_n_s_import;
@@ -1827,12 +1835,14 @@ static PyObject *__pyx_n_s_range;
 static PyObject *__pyx_n_s_s;
 static PyObject *__pyx_n_s_skip_prob;
 static PyObject *__pyx_n_s_stay_prob;
+static PyObject *__pyx_n_s_stay_transition_cost_zero;
 static PyObject *__pyx_n_s_switch_prob;
 static PyObject *__pyx_n_s_t;
 static PyObject *__pyx_n_s_table;
 static PyObject *__pyx_n_s_test;
 static PyObject *__pyx_n_s_zeros;
-static PyObject *__pyx_pf_16ctc_segmentation_20ctc_segmentation_dyn_cython_fill_table(CYTHON_UNUSED PyObject *__pyx_self, PyArrayObject *__pyx_v_table, PyArrayObject *__pyx_v_lpz, PyArrayObject *__pyx_v_ground_truth, PyArrayObject *__pyx_v_offsets, int __pyx_v_blank); /* proto */
+static PyObject *__pyx_pf_16ctc_segmentation_20ctc_segmentation_dyn_cython_fill_table(CYTHON_UNUSED PyObject *__pyx_self, PyArrayObject *__pyx_v_table, PyArrayObject *__pyx_v_lpz, PyArrayObject *__pyx_v_ground_truth, PyArrayObject *__pyx_v_offsets, int __pyx_v_blank, int __pyx_v_flags); /* proto */
+static PyObject *__pyx_int_0;
 static PyObject *__pyx_int_1;
 static PyObject *__pyx_slice_;
 static PyObject *__pyx_tuple__2;
@@ -1851,7 +1861,7 @@ static PyObject *__pyx_codeobj__5;
 
 /* Python wrapper */
 static PyObject *__pyx_pw_16ctc_segmentation_20ctc_segmentation_dyn_1cython_fill_table(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
-static char __pyx_doc_16ctc_segmentation_20ctc_segmentation_dyn_cython_fill_table[] = "Fill the table of transition probabilities.\n\n    :param table: table filled with maximum joint probabilities k_{t,j}\n    :param lpz: character probabilities of each time frame\n    :param ground_truth: label sequence\n    :param offsets: window offsets per character (given as array of zeros)\n    :param blank: label ID of the blank symbol, usually 0\n    :return:\n    ";
+static char __pyx_doc_16ctc_segmentation_20ctc_segmentation_dyn_cython_fill_table[] = "Fill the table of transition probabilities.\n\n    :param table: table filled with maximum joint probabilities k_{t,j}\n    :param lpz: character probabilities of each time frame\n    :param ground_truth: label sequence\n    :param offsets: window offsets per character (given as array of zeros)\n    :param blank: label ID of the blank symbol, usually 0\n    :param flags: configuration options, default 0\n    :return:\n    ";
 static PyMethodDef __pyx_mdef_16ctc_segmentation_20ctc_segmentation_dyn_1cython_fill_table = {"cython_fill_table", (PyCFunction)(void*)(PyCFunctionWithKeywords)__pyx_pw_16ctc_segmentation_20ctc_segmentation_dyn_1cython_fill_table, METH_VARARGS|METH_KEYWORDS, __pyx_doc_16ctc_segmentation_20ctc_segmentation_dyn_cython_fill_table};
 static PyObject *__pyx_pw_16ctc_segmentation_20ctc_segmentation_dyn_1cython_fill_table(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
   PyArrayObject *__pyx_v_table = 0;
@@ -1859,6 +1869,7 @@ static PyObject *__pyx_pw_16ctc_segmentation_20ctc_segmentation_dyn_1cython_fill
   PyArrayObject *__pyx_v_ground_truth = 0;
   PyArrayObject *__pyx_v_offsets = 0;
   int __pyx_v_blank;
+  int __pyx_v_flags;
   int __pyx_lineno = 0;
   const char *__pyx_filename = NULL;
   int __pyx_clineno = 0;
@@ -1866,12 +1877,14 @@ static PyObject *__pyx_pw_16ctc_segmentation_20ctc_segmentation_dyn_1cython_fill
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("cython_fill_table (wrapper)", 0);
   {
-    static PyObject **__pyx_pyargnames[] = {&__pyx_n_s_table,&__pyx_n_s_lpz,&__pyx_n_s_ground_truth,&__pyx_n_s_offsets,&__pyx_n_s_blank,0};
-    PyObject* values[5] = {0,0,0,0,0};
+    static PyObject **__pyx_pyargnames[] = {&__pyx_n_s_table,&__pyx_n_s_lpz,&__pyx_n_s_ground_truth,&__pyx_n_s_offsets,&__pyx_n_s_blank,&__pyx_n_s_flags,0};
+    PyObject* values[6] = {0,0,0,0,0,0};
     if (unlikely(__pyx_kwds)) {
       Py_ssize_t kw_args;
       const Py_ssize_t pos_args = PyTuple_GET_SIZE(__pyx_args);
       switch (pos_args) {
+        case  6: values[5] = PyTuple_GET_ITEM(__pyx_args, 5);
+        CYTHON_FALLTHROUGH;
         case  5: values[4] = PyTuple_GET_ITEM(__pyx_args, 4);
         CYTHON_FALLTHROUGH;
         case  4: values[3] = PyTuple_GET_ITEM(__pyx_args, 3);
@@ -1894,31 +1907,37 @@ static PyObject *__pyx_pw_16ctc_segmentation_20ctc_segmentation_dyn_1cython_fill
         case  1:
         if (likely((values[1] = __Pyx_PyDict_GetItemStr(__pyx_kwds, __pyx_n_s_lpz)) != 0)) kw_args--;
         else {
-          __Pyx_RaiseArgtupleInvalid("cython_fill_table", 1, 5, 5, 1); __PYX_ERR(0, 20, __pyx_L3_error)
+          __Pyx_RaiseArgtupleInvalid("cython_fill_table", 1, 6, 6, 1); __PYX_ERR(0, 20, __pyx_L3_error)
         }
         CYTHON_FALLTHROUGH;
         case  2:
         if (likely((values[2] = __Pyx_PyDict_GetItemStr(__pyx_kwds, __pyx_n_s_ground_truth)) != 0)) kw_args--;
         else {
-          __Pyx_RaiseArgtupleInvalid("cython_fill_table", 1, 5, 5, 2); __PYX_ERR(0, 20, __pyx_L3_error)
+          __Pyx_RaiseArgtupleInvalid("cython_fill_table", 1, 6, 6, 2); __PYX_ERR(0, 20, __pyx_L3_error)
         }
         CYTHON_FALLTHROUGH;
         case  3:
         if (likely((values[3] = __Pyx_PyDict_GetItemStr(__pyx_kwds, __pyx_n_s_offsets)) != 0)) kw_args--;
         else {
-          __Pyx_RaiseArgtupleInvalid("cython_fill_table", 1, 5, 5, 3); __PYX_ERR(0, 20, __pyx_L3_error)
+          __Pyx_RaiseArgtupleInvalid("cython_fill_table", 1, 6, 6, 3); __PYX_ERR(0, 20, __pyx_L3_error)
         }
         CYTHON_FALLTHROUGH;
         case  4:
         if (likely((values[4] = __Pyx_PyDict_GetItemStr(__pyx_kwds, __pyx_n_s_blank)) != 0)) kw_args--;
         else {
-          __Pyx_RaiseArgtupleInvalid("cython_fill_table", 1, 5, 5, 4); __PYX_ERR(0, 20, __pyx_L3_error)
+          __Pyx_RaiseArgtupleInvalid("cython_fill_table", 1, 6, 6, 4); __PYX_ERR(0, 20, __pyx_L3_error)
+        }
+        CYTHON_FALLTHROUGH;
+        case  5:
+        if (likely((values[5] = __Pyx_PyDict_GetItemStr(__pyx_kwds, __pyx_n_s_flags)) != 0)) kw_args--;
+        else {
+          __Pyx_RaiseArgtupleInvalid("cython_fill_table", 1, 6, 6, 5); __PYX_ERR(0, 20, __pyx_L3_error)
         }
       }
       if (unlikely(kw_args > 0)) {
         if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_pyargnames, 0, values, pos_args, "cython_fill_table") < 0)) __PYX_ERR(0, 20, __pyx_L3_error)
       }
-    } else if (PyTuple_GET_SIZE(__pyx_args) != 5) {
+    } else if (PyTuple_GET_SIZE(__pyx_args) != 6) {
       goto __pyx_L5_argtuple_error;
     } else {
       values[0] = PyTuple_GET_ITEM(__pyx_args, 0);
@@ -1926,16 +1945,18 @@ static PyObject *__pyx_pw_16ctc_segmentation_20ctc_segmentation_dyn_1cython_fill
       values[2] = PyTuple_GET_ITEM(__pyx_args, 2);
       values[3] = PyTuple_GET_ITEM(__pyx_args, 3);
       values[4] = PyTuple_GET_ITEM(__pyx_args, 4);
+      values[5] = PyTuple_GET_ITEM(__pyx_args, 5);
     }
     __pyx_v_table = ((PyArrayObject *)values[0]);
     __pyx_v_lpz = ((PyArrayObject *)values[1]);
     __pyx_v_ground_truth = ((PyArrayObject *)values[2]);
     __pyx_v_offsets = ((PyArrayObject *)values[3]);
     __pyx_v_blank = __Pyx_PyInt_As_int(values[4]); if (unlikely((__pyx_v_blank == (int)-1) && PyErr_Occurred())) __PYX_ERR(0, 24, __pyx_L3_error)
+    __pyx_v_flags = __Pyx_PyInt_As_int(values[5]); if (unlikely((__pyx_v_flags == (int)-1) && PyErr_Occurred())) __PYX_ERR(0, 25, __pyx_L3_error)
   }
   goto __pyx_L4_argument_unpacking_done;
   __pyx_L5_argtuple_error:;
-  __Pyx_RaiseArgtupleInvalid("cython_fill_table", 1, 5, 5, PyTuple_GET_SIZE(__pyx_args)); __PYX_ERR(0, 20, __pyx_L3_error)
+  __Pyx_RaiseArgtupleInvalid("cython_fill_table", 1, 6, 6, PyTuple_GET_SIZE(__pyx_args)); __PYX_ERR(0, 20, __pyx_L3_error)
   __pyx_L3_error:;
   __Pyx_AddTraceback("ctc_segmentation.ctc_segmentation_dyn.cython_fill_table", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __Pyx_RefNannyFinishContext();
@@ -1945,7 +1966,7 @@ static PyObject *__pyx_pw_16ctc_segmentation_20ctc_segmentation_dyn_1cython_fill
   if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_lpz), __pyx_ptype_5numpy_ndarray, 1, "lpz", 0))) __PYX_ERR(0, 21, __pyx_L1_error)
   if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_ground_truth), __pyx_ptype_5numpy_ndarray, 1, "ground_truth", 0))) __PYX_ERR(0, 22, __pyx_L1_error)
   if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_offsets), __pyx_ptype_5numpy_ndarray, 1, "offsets", 0))) __PYX_ERR(0, 23, __pyx_L1_error)
-  __pyx_r = __pyx_pf_16ctc_segmentation_20ctc_segmentation_dyn_cython_fill_table(__pyx_self, __pyx_v_table, __pyx_v_lpz, __pyx_v_ground_truth, __pyx_v_offsets, __pyx_v_blank);
+  __pyx_r = __pyx_pf_16ctc_segmentation_20ctc_segmentation_dyn_cython_fill_table(__pyx_self, __pyx_v_table, __pyx_v_lpz, __pyx_v_ground_truth, __pyx_v_offsets, __pyx_v_blank, __pyx_v_flags);
 
   /* function exit code */
   goto __pyx_L0;
@@ -1956,7 +1977,7 @@ static PyObject *__pyx_pw_16ctc_segmentation_20ctc_segmentation_dyn_1cython_fill
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_16ctc_segmentation_20ctc_segmentation_dyn_cython_fill_table(CYTHON_UNUSED PyObject *__pyx_self, PyArrayObject *__pyx_v_table, PyArrayObject *__pyx_v_lpz, PyArrayObject *__pyx_v_ground_truth, PyArrayObject *__pyx_v_offsets, int __pyx_v_blank) {
+static PyObject *__pyx_pf_16ctc_segmentation_20ctc_segmentation_dyn_cython_fill_table(CYTHON_UNUSED PyObject *__pyx_self, PyArrayObject *__pyx_v_table, PyArrayObject *__pyx_v_lpz, PyArrayObject *__pyx_v_ground_truth, PyArrayObject *__pyx_v_offsets, int __pyx_v_blank, int __pyx_v_flags) {
   int __pyx_v_c;
   int __pyx_v_t;
   int __pyx_v_offset;
@@ -1973,6 +1994,7 @@ static PyObject *__pyx_pf_16ctc_segmentation_20ctc_segmentation_dyn_cython_fill_
   float __pyx_v_max_lpz_prob;
   float __pyx_v_p;
   int __pyx_v_s;
+  int __pyx_v_stay_transition_cost_zero;
   __Pyx_LocalBuf_ND __pyx_pybuffernd_cur_offset;
   __Pyx_Buffer __pyx_pybuffer_cur_offset;
   __Pyx_LocalBuf_ND __pyx_pybuffernd_ground_truth;
@@ -2067,7 +2089,7 @@ static PyObject *__pyx_pf_16ctc_segmentation_20ctc_segmentation_dyn_cython_fill_
   }
   __pyx_pybuffernd_offsets.diminfo[0].strides = __pyx_pybuffernd_offsets.rcbuffer->pybuffer.strides[0]; __pyx_pybuffernd_offsets.diminfo[0].shape = __pyx_pybuffernd_offsets.rcbuffer->pybuffer.shape[0];
 
-  /* "ctc_segmentation/ctc_segmentation_dyn.pyx":36
+  /* "ctc_segmentation/ctc_segmentation_dyn.pyx":38
  *     cdef int c
  *     cdef int t
  *     cdef int offset = 0             # <<<<<<<<<<<<<<
@@ -2076,7 +2098,7 @@ static PyObject *__pyx_pf_16ctc_segmentation_20ctc_segmentation_dyn_cython_fill_
  */
   __pyx_v_offset = 0;
 
-  /* "ctc_segmentation/ctc_segmentation_dyn.pyx":38
+  /* "ctc_segmentation/ctc_segmentation_dyn.pyx":40
  *     cdef int offset = 0
  *     cdef float mean_offset
  *     cdef int offset_sum = 0             # <<<<<<<<<<<<<<
@@ -2085,7 +2107,7 @@ static PyObject *__pyx_pf_16ctc_segmentation_20ctc_segmentation_dyn_cython_fill_
  */
   __pyx_v_offset_sum = 0;
 
-  /* "ctc_segmentation/ctc_segmentation_dyn.pyx":42
+  /* "ctc_segmentation/ctc_segmentation_dyn.pyx":44
  *     cdef int higher_offset
  *     cdef float switch_prob, stay_prob, skip_prob
  *     cdef float prob_max = -1000000000             # <<<<<<<<<<<<<<
@@ -2094,28 +2116,28 @@ static PyObject *__pyx_pf_16ctc_segmentation_20ctc_segmentation_dyn_cython_fill_
  */
   __pyx_v_prob_max = -1000000000.0;
 
-  /* "ctc_segmentation/ctc_segmentation_dyn.pyx":45
+  /* "ctc_segmentation/ctc_segmentation_dyn.pyx":47
  *     cdef float last_max
  *     cdef int last_arg_max
  *     cdef np.ndarray[np.int_t, ndim=1] cur_offset = np.zeros([ground_truth.shape[1]], np.int) - 1             # <<<<<<<<<<<<<<
  *     cdef float max_lpz_prob
  *     cdef float p
  */
-  __Pyx_GetModuleGlobalName(__pyx_t_2, __pyx_n_s_np); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 45, __pyx_L1_error)
+  __Pyx_GetModuleGlobalName(__pyx_t_2, __pyx_n_s_np); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 47, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
-  __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_t_2, __pyx_n_s_zeros); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 45, __pyx_L1_error)
+  __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_t_2, __pyx_n_s_zeros); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 47, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_3);
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
-  __pyx_t_2 = __Pyx_PyInt_From_Py_intptr_t((__pyx_v_ground_truth->dimensions[1])); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 45, __pyx_L1_error)
+  __pyx_t_2 = __Pyx_PyInt_From_Py_intptr_t((__pyx_v_ground_truth->dimensions[1])); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 47, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
-  __pyx_t_4 = PyList_New(1); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 45, __pyx_L1_error)
+  __pyx_t_4 = PyList_New(1); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 47, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_4);
   __Pyx_GIVEREF(__pyx_t_2);
   PyList_SET_ITEM(__pyx_t_4, 0, __pyx_t_2);
   __pyx_t_2 = 0;
-  __Pyx_GetModuleGlobalName(__pyx_t_2, __pyx_n_s_np); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 45, __pyx_L1_error)
+  __Pyx_GetModuleGlobalName(__pyx_t_2, __pyx_n_s_np); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 47, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
-  __pyx_t_5 = __Pyx_PyObject_GetAttrStr(__pyx_t_2, __pyx_n_s_int); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 45, __pyx_L1_error)
+  __pyx_t_5 = __Pyx_PyObject_GetAttrStr(__pyx_t_2, __pyx_n_s_int); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 47, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_5);
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
   __pyx_t_2 = NULL;
@@ -2133,7 +2155,7 @@ static PyObject *__pyx_pf_16ctc_segmentation_20ctc_segmentation_dyn_cython_fill_
   #if CYTHON_FAST_PYCALL
   if (PyFunction_Check(__pyx_t_3)) {
     PyObject *__pyx_temp[3] = {__pyx_t_2, __pyx_t_4, __pyx_t_5};
-    __pyx_t_1 = __Pyx_PyFunction_FastCall(__pyx_t_3, __pyx_temp+1-__pyx_t_6, 2+__pyx_t_6); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 45, __pyx_L1_error)
+    __pyx_t_1 = __Pyx_PyFunction_FastCall(__pyx_t_3, __pyx_temp+1-__pyx_t_6, 2+__pyx_t_6); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 47, __pyx_L1_error)
     __Pyx_XDECREF(__pyx_t_2); __pyx_t_2 = 0;
     __Pyx_GOTREF(__pyx_t_1);
     __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
@@ -2143,7 +2165,7 @@ static PyObject *__pyx_pf_16ctc_segmentation_20ctc_segmentation_dyn_cython_fill_
   #if CYTHON_FAST_PYCCALL
   if (__Pyx_PyFastCFunction_Check(__pyx_t_3)) {
     PyObject *__pyx_temp[3] = {__pyx_t_2, __pyx_t_4, __pyx_t_5};
-    __pyx_t_1 = __Pyx_PyCFunction_FastCall(__pyx_t_3, __pyx_temp+1-__pyx_t_6, 2+__pyx_t_6); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 45, __pyx_L1_error)
+    __pyx_t_1 = __Pyx_PyCFunction_FastCall(__pyx_t_3, __pyx_temp+1-__pyx_t_6, 2+__pyx_t_6); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 47, __pyx_L1_error)
     __Pyx_XDECREF(__pyx_t_2); __pyx_t_2 = 0;
     __Pyx_GOTREF(__pyx_t_1);
     __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
@@ -2151,7 +2173,7 @@ static PyObject *__pyx_pf_16ctc_segmentation_20ctc_segmentation_dyn_cython_fill_
   } else
   #endif
   {
-    __pyx_t_7 = PyTuple_New(2+__pyx_t_6); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 45, __pyx_L1_error)
+    __pyx_t_7 = PyTuple_New(2+__pyx_t_6); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 47, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_7);
     if (__pyx_t_2) {
       __Pyx_GIVEREF(__pyx_t_2); PyTuple_SET_ITEM(__pyx_t_7, 0, __pyx_t_2); __pyx_t_2 = NULL;
@@ -2162,21 +2184,21 @@ static PyObject *__pyx_pf_16ctc_segmentation_20ctc_segmentation_dyn_cython_fill_
     PyTuple_SET_ITEM(__pyx_t_7, 1+__pyx_t_6, __pyx_t_5);
     __pyx_t_4 = 0;
     __pyx_t_5 = 0;
-    __pyx_t_1 = __Pyx_PyObject_Call(__pyx_t_3, __pyx_t_7, NULL); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 45, __pyx_L1_error)
+    __pyx_t_1 = __Pyx_PyObject_Call(__pyx_t_3, __pyx_t_7, NULL); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 47, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_1);
     __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
   }
   __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
-  __pyx_t_3 = __Pyx_PyInt_SubtractObjC(__pyx_t_1, __pyx_int_1, 1, 0, 0); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 45, __pyx_L1_error)
+  __pyx_t_3 = __Pyx_PyInt_SubtractObjC(__pyx_t_1, __pyx_int_1, 1, 0, 0); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 47, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_3);
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-  if (!(likely(((__pyx_t_3) == Py_None) || likely(__Pyx_TypeTest(__pyx_t_3, __pyx_ptype_5numpy_ndarray))))) __PYX_ERR(0, 45, __pyx_L1_error)
+  if (!(likely(((__pyx_t_3) == Py_None) || likely(__Pyx_TypeTest(__pyx_t_3, __pyx_ptype_5numpy_ndarray))))) __PYX_ERR(0, 47, __pyx_L1_error)
   __pyx_t_8 = ((PyArrayObject *)__pyx_t_3);
   {
     __Pyx_BufFmt_StackElem __pyx_stack[1];
     if (unlikely(__Pyx_GetBufferAndValidate(&__pyx_pybuffernd_cur_offset.rcbuffer->pybuffer, (PyObject*)__pyx_t_8, &__Pyx_TypeInfo_nn___pyx_t_5numpy_int_t, PyBUF_FORMAT| PyBUF_STRIDES| PyBUF_WRITABLE, 1, 0, __pyx_stack) == -1)) {
       __pyx_v_cur_offset = ((PyArrayObject *)Py_None); __Pyx_INCREF(Py_None); __pyx_pybuffernd_cur_offset.rcbuffer->pybuffer.buf = NULL;
-      __PYX_ERR(0, 45, __pyx_L1_error)
+      __PYX_ERR(0, 47, __pyx_L1_error)
     } else {__pyx_pybuffernd_cur_offset.diminfo[0].strides = __pyx_pybuffernd_cur_offset.rcbuffer->pybuffer.strides[0]; __pyx_pybuffernd_cur_offset.diminfo[0].shape = __pyx_pybuffernd_cur_offset.rcbuffer->pybuffer.shape[0];
     }
   }
@@ -2184,7 +2206,7 @@ static PyObject *__pyx_pf_16ctc_segmentation_20ctc_segmentation_dyn_cython_fill_
   __pyx_v_cur_offset = ((PyArrayObject *)__pyx_t_3);
   __pyx_t_3 = 0;
 
-  /* "ctc_segmentation/ctc_segmentation_dyn.pyx":51
+  /* "ctc_segmentation/ctc_segmentation_dyn.pyx":54
  * 
  *     # Compute the mean offset between two window positions
  *     mean_offset = (lpz.shape[0] - table.shape[0]) / float(table.shape[1])             # <<<<<<<<<<<<<<
@@ -2194,23 +2216,23 @@ static PyObject *__pyx_pf_16ctc_segmentation_20ctc_segmentation_dyn_cython_fill_
   __pyx_t_9 = ((__pyx_v_lpz->dimensions[0]) - (__pyx_v_table->dimensions[0]));
   if (unlikely(((double)(__pyx_v_table->dimensions[1])) == 0)) {
     PyErr_SetString(PyExc_ZeroDivisionError, "float division");
-    __PYX_ERR(0, 51, __pyx_L1_error)
+    __PYX_ERR(0, 54, __pyx_L1_error)
   }
   __pyx_v_mean_offset = (((double)__pyx_t_9) / ((double)(__pyx_v_table->dimensions[1])));
 
-  /* "ctc_segmentation/ctc_segmentation_dyn.pyx":52
+  /* "ctc_segmentation/ctc_segmentation_dyn.pyx":55
  *     # Compute the mean offset between two window positions
  *     mean_offset = (lpz.shape[0] - table.shape[0]) / float(table.shape[1])
  *     logging.debug(f"Average character duration: {mean_offset} (indices)")             # <<<<<<<<<<<<<<
  *     lower_offset = int(mean_offset)
  *     higher_offset = lower_offset + 1
  */
-  __Pyx_GetModuleGlobalName(__pyx_t_1, __pyx_n_s_logging); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 52, __pyx_L1_error)
+  __Pyx_GetModuleGlobalName(__pyx_t_1, __pyx_n_s_logging); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 55, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
-  __pyx_t_7 = __Pyx_PyObject_GetAttrStr(__pyx_t_1, __pyx_n_s_debug); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 52, __pyx_L1_error)
+  __pyx_t_7 = __Pyx_PyObject_GetAttrStr(__pyx_t_1, __pyx_n_s_debug); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 55, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_7);
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-  __pyx_t_1 = PyTuple_New(3); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 52, __pyx_L1_error)
+  __pyx_t_1 = PyTuple_New(3); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 55, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __pyx_t_10 = 0;
   __pyx_t_11 = 127;
@@ -2218,9 +2240,9 @@ static PyObject *__pyx_pf_16ctc_segmentation_20ctc_segmentation_dyn_cython_fill_
   __pyx_t_10 += 28;
   __Pyx_GIVEREF(__pyx_kp_u_Average_character_duration);
   PyTuple_SET_ITEM(__pyx_t_1, 0, __pyx_kp_u_Average_character_duration);
-  __pyx_t_5 = PyFloat_FromDouble(__pyx_v_mean_offset); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 52, __pyx_L1_error)
+  __pyx_t_5 = PyFloat_FromDouble(__pyx_v_mean_offset); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 55, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_5);
-  __pyx_t_4 = __Pyx_PyObject_FormatSimple(__pyx_t_5, __pyx_empty_unicode); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 52, __pyx_L1_error)
+  __pyx_t_4 = __Pyx_PyObject_FormatSimple(__pyx_t_5, __pyx_empty_unicode); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 55, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_4);
   __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
   __pyx_t_11 = (__Pyx_PyUnicode_MAX_CHAR_VALUE(__pyx_t_4) > __pyx_t_11) ? __Pyx_PyUnicode_MAX_CHAR_VALUE(__pyx_t_4) : __pyx_t_11;
@@ -2232,7 +2254,7 @@ static PyObject *__pyx_pf_16ctc_segmentation_20ctc_segmentation_dyn_cython_fill_
   __pyx_t_10 += 10;
   __Pyx_GIVEREF(__pyx_kp_u_indices);
   PyTuple_SET_ITEM(__pyx_t_1, 2, __pyx_kp_u_indices);
-  __pyx_t_4 = __Pyx_PyUnicode_Join(__pyx_t_1, 3, __pyx_t_10, __pyx_t_11); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 52, __pyx_L1_error)
+  __pyx_t_4 = __Pyx_PyUnicode_Join(__pyx_t_1, 3, __pyx_t_10, __pyx_t_11); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 55, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_4);
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   __pyx_t_1 = NULL;
@@ -2248,12 +2270,12 @@ static PyObject *__pyx_pf_16ctc_segmentation_20ctc_segmentation_dyn_cython_fill_
   __pyx_t_3 = (__pyx_t_1) ? __Pyx_PyObject_Call2Args(__pyx_t_7, __pyx_t_1, __pyx_t_4) : __Pyx_PyObject_CallOneArg(__pyx_t_7, __pyx_t_4);
   __Pyx_XDECREF(__pyx_t_1); __pyx_t_1 = 0;
   __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-  if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 52, __pyx_L1_error)
+  if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 55, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_3);
   __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
   __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
 
-  /* "ctc_segmentation/ctc_segmentation_dyn.pyx":53
+  /* "ctc_segmentation/ctc_segmentation_dyn.pyx":56
  *     mean_offset = (lpz.shape[0] - table.shape[0]) / float(table.shape[1])
  *     logging.debug(f"Average character duration: {mean_offset} (indices)")
  *     lower_offset = int(mean_offset)             # <<<<<<<<<<<<<<
@@ -2262,7 +2284,7 @@ static PyObject *__pyx_pf_16ctc_segmentation_20ctc_segmentation_dyn_cython_fill_
  */
   __pyx_v_lower_offset = ((int)__pyx_v_mean_offset);
 
-  /* "ctc_segmentation/ctc_segmentation_dyn.pyx":54
+  /* "ctc_segmentation/ctc_segmentation_dyn.pyx":57
  *     logging.debug(f"Average character duration: {mean_offset} (indices)")
  *     lower_offset = int(mean_offset)
  *     higher_offset = lower_offset + 1             # <<<<<<<<<<<<<<
@@ -2271,7 +2293,7 @@ static PyObject *__pyx_pf_16ctc_segmentation_20ctc_segmentation_dyn_cython_fill_
  */
   __pyx_v_higher_offset = (__pyx_v_lower_offset + 1);
 
-  /* "ctc_segmentation/ctc_segmentation_dyn.pyx":56
+  /* "ctc_segmentation/ctc_segmentation_dyn.pyx":59
  *     higher_offset = lower_offset + 1
  *     # calculation of the trellis diagram table
  *     table[0, 0] = 0             # <<<<<<<<<<<<<<
@@ -2291,11 +2313,11 @@ static PyObject *__pyx_pf_16ctc_segmentation_20ctc_segmentation_dyn_cython_fill_
   } else if (unlikely(__pyx_t_13 >= __pyx_pybuffernd_table.diminfo[1].shape)) __pyx_t_6 = 1;
   if (unlikely(__pyx_t_6 != -1)) {
     __Pyx_RaiseBufferIndexError(__pyx_t_6);
-    __PYX_ERR(0, 56, __pyx_L1_error)
+    __PYX_ERR(0, 59, __pyx_L1_error)
   }
   *__Pyx_BufPtrStrided2d(__pyx_t_5numpy_float32_t *, __pyx_pybuffernd_table.rcbuffer->pybuffer.buf, __pyx_t_12, __pyx_pybuffernd_table.diminfo[0].strides, __pyx_t_13, __pyx_pybuffernd_table.diminfo[1].strides) = 0.0;
 
-  /* "ctc_segmentation/ctc_segmentation_dyn.pyx":57
+  /* "ctc_segmentation/ctc_segmentation_dyn.pyx":60
  *     # calculation of the trellis diagram table
  *     table[0, 0] = 0
  *     for c in range(table.shape[1]):             # <<<<<<<<<<<<<<
@@ -2307,7 +2329,7 @@ static PyObject *__pyx_pf_16ctc_segmentation_20ctc_segmentation_dyn_cython_fill_
   for (__pyx_t_6 = 0; __pyx_t_6 < __pyx_t_14; __pyx_t_6+=1) {
     __pyx_v_c = __pyx_t_6;
 
-    /* "ctc_segmentation/ctc_segmentation_dyn.pyx":58
+    /* "ctc_segmentation/ctc_segmentation_dyn.pyx":61
  *     table[0, 0] = 0
  *     for c in range(table.shape[1]):
  *         if c > 0:             # <<<<<<<<<<<<<<
@@ -2317,7 +2339,7 @@ static PyObject *__pyx_pf_16ctc_segmentation_20ctc_segmentation_dyn_cython_fill_
     __pyx_t_15 = ((__pyx_v_c > 0) != 0);
     if (__pyx_t_15) {
 
-      /* "ctc_segmentation/ctc_segmentation_dyn.pyx":61
+      /* "ctc_segmentation/ctc_segmentation_dyn.pyx":64
  *             # Compute next window offset
  *             offset = min(max(0, last_arg_max - table.shape[0] // 2),
  *                          min(higher_offset, (lpz.shape[0] - table.shape[0]) - offset_sum))             # <<<<<<<<<<<<<<
@@ -2333,7 +2355,7 @@ static PyObject *__pyx_pf_16ctc_segmentation_20ctc_segmentation_dyn_cython_fill_
       }
       __pyx_t_16 = __pyx_t_18;
 
-      /* "ctc_segmentation/ctc_segmentation_dyn.pyx":60
+      /* "ctc_segmentation/ctc_segmentation_dyn.pyx":63
  *         if c > 0:
  *             # Compute next window offset
  *             offset = min(max(0, last_arg_max - table.shape[0] // 2),             # <<<<<<<<<<<<<<
@@ -2349,7 +2371,7 @@ static PyObject *__pyx_pf_16ctc_segmentation_20ctc_segmentation_dyn_cython_fill_
       }
       __pyx_t_19 = __pyx_t_21;
 
-      /* "ctc_segmentation/ctc_segmentation_dyn.pyx":61
+      /* "ctc_segmentation/ctc_segmentation_dyn.pyx":64
  *             # Compute next window offset
  *             offset = min(max(0, last_arg_max - table.shape[0] // 2),
  *                          min(higher_offset, (lpz.shape[0] - table.shape[0]) - offset_sum))             # <<<<<<<<<<<<<<
@@ -2363,7 +2385,7 @@ static PyObject *__pyx_pf_16ctc_segmentation_20ctc_segmentation_dyn_cython_fill_
       }
       __pyx_v_offset = __pyx_t_21;
 
-      /* "ctc_segmentation/ctc_segmentation_dyn.pyx":63
+      /* "ctc_segmentation/ctc_segmentation_dyn.pyx":66
  *                          min(higher_offset, (lpz.shape[0] - table.shape[0]) - offset_sum))
  *             # Compute relative offset to previous columns
  *             for s in range(ground_truth.shape[1] - 1):             # <<<<<<<<<<<<<<
@@ -2375,7 +2397,7 @@ static PyObject *__pyx_pf_16ctc_segmentation_20ctc_segmentation_dyn_cython_fill_
       for (__pyx_t_17 = 0; __pyx_t_17 < __pyx_t_19; __pyx_t_17+=1) {
         __pyx_v_s = __pyx_t_17;
 
-        /* "ctc_segmentation/ctc_segmentation_dyn.pyx":64
+        /* "ctc_segmentation/ctc_segmentation_dyn.pyx":67
  *             # Compute relative offset to previous columns
  *             for s in range(ground_truth.shape[1] - 1):
  *                 cur_offset[s + 1] = cur_offset[s] + offset             # <<<<<<<<<<<<<<
@@ -2390,7 +2412,7 @@ static PyObject *__pyx_pf_16ctc_segmentation_20ctc_segmentation_dyn_cython_fill_
         } else if (unlikely(__pyx_t_13 >= __pyx_pybuffernd_cur_offset.diminfo[0].shape)) __pyx_t_22 = 0;
         if (unlikely(__pyx_t_22 != -1)) {
           __Pyx_RaiseBufferIndexError(__pyx_t_22);
-          __PYX_ERR(0, 64, __pyx_L1_error)
+          __PYX_ERR(0, 67, __pyx_L1_error)
         }
         __pyx_t_12 = (__pyx_v_s + 1);
         __pyx_t_22 = -1;
@@ -2400,12 +2422,12 @@ static PyObject *__pyx_pf_16ctc_segmentation_20ctc_segmentation_dyn_cython_fill_
         } else if (unlikely(__pyx_t_12 >= __pyx_pybuffernd_cur_offset.diminfo[0].shape)) __pyx_t_22 = 0;
         if (unlikely(__pyx_t_22 != -1)) {
           __Pyx_RaiseBufferIndexError(__pyx_t_22);
-          __PYX_ERR(0, 64, __pyx_L1_error)
+          __PYX_ERR(0, 67, __pyx_L1_error)
         }
         *__Pyx_BufPtrStrided1d(__pyx_t_5numpy_int_t *, __pyx_pybuffernd_cur_offset.rcbuffer->pybuffer.buf, __pyx_t_12, __pyx_pybuffernd_cur_offset.diminfo[0].strides) = ((*__Pyx_BufPtrStrided1d(__pyx_t_5numpy_int_t *, __pyx_pybuffernd_cur_offset.rcbuffer->pybuffer.buf, __pyx_t_13, __pyx_pybuffernd_cur_offset.diminfo[0].strides)) + __pyx_v_offset);
       }
 
-      /* "ctc_segmentation/ctc_segmentation_dyn.pyx":65
+      /* "ctc_segmentation/ctc_segmentation_dyn.pyx":68
  *             for s in range(ground_truth.shape[1] - 1):
  *                 cur_offset[s + 1] = cur_offset[s] + offset
  *             cur_offset[0] = offset             # <<<<<<<<<<<<<<
@@ -2420,11 +2442,11 @@ static PyObject *__pyx_pf_16ctc_segmentation_20ctc_segmentation_dyn_cython_fill_
       } else if (unlikely(__pyx_t_13 >= __pyx_pybuffernd_cur_offset.diminfo[0].shape)) __pyx_t_17 = 0;
       if (unlikely(__pyx_t_17 != -1)) {
         __Pyx_RaiseBufferIndexError(__pyx_t_17);
-        __PYX_ERR(0, 65, __pyx_L1_error)
+        __PYX_ERR(0, 68, __pyx_L1_error)
       }
       *__Pyx_BufPtrStrided1d(__pyx_t_5numpy_int_t *, __pyx_pybuffernd_cur_offset.rcbuffer->pybuffer.buf, __pyx_t_13, __pyx_pybuffernd_cur_offset.diminfo[0].strides) = __pyx_v_offset;
 
-      /* "ctc_segmentation/ctc_segmentation_dyn.pyx":67
+      /* "ctc_segmentation/ctc_segmentation_dyn.pyx":70
  *             cur_offset[0] = offset
  *             # Apply offset and move window one step further
  *             offset_sum += offset             # <<<<<<<<<<<<<<
@@ -2433,7 +2455,7 @@ static PyObject *__pyx_pf_16ctc_segmentation_20ctc_segmentation_dyn_cython_fill_
  */
       __pyx_v_offset_sum = (__pyx_v_offset_sum + __pyx_v_offset);
 
-      /* "ctc_segmentation/ctc_segmentation_dyn.pyx":58
+      /* "ctc_segmentation/ctc_segmentation_dyn.pyx":61
  *     table[0, 0] = 0
  *     for c in range(table.shape[1]):
  *         if c > 0:             # <<<<<<<<<<<<<<
@@ -2442,7 +2464,7 @@ static PyObject *__pyx_pf_16ctc_segmentation_20ctc_segmentation_dyn_cython_fill_
  */
     }
 
-    /* "ctc_segmentation/ctc_segmentation_dyn.pyx":69
+    /* "ctc_segmentation/ctc_segmentation_dyn.pyx":72
  *             offset_sum += offset
  *         # Log offset
  *         offsets[c] = offset_sum             # <<<<<<<<<<<<<<
@@ -2457,30 +2479,87 @@ static PyObject *__pyx_pf_16ctc_segmentation_20ctc_segmentation_dyn_cython_fill_
     } else if (unlikely(__pyx_t_13 >= __pyx_pybuffernd_offsets.diminfo[0].shape)) __pyx_t_17 = 0;
     if (unlikely(__pyx_t_17 != -1)) {
       __Pyx_RaiseBufferIndexError(__pyx_t_17);
-      __PYX_ERR(0, 69, __pyx_L1_error)
+      __PYX_ERR(0, 72, __pyx_L1_error)
     }
     *__Pyx_BufPtrStrided1d(__pyx_t_5numpy_int_t *, __pyx_pybuffernd_offsets.rcbuffer->pybuffer.buf, __pyx_t_13, __pyx_pybuffernd_offsets.diminfo[0].strides) = __pyx_v_offset_sum;
 
-    /* "ctc_segmentation/ctc_segmentation_dyn.pyx":70
+    /* "ctc_segmentation/ctc_segmentation_dyn.pyx":73
  *         # Log offset
  *         offsets[c] = offset_sum
  *         last_arg_max = -1             # <<<<<<<<<<<<<<
  *         last_max = 0
- *         # Go through all rows of the current column
+ *         # flag for setting stay transition cost to zero for blank
  */
     __pyx_v_last_arg_max = -1;
 
-    /* "ctc_segmentation/ctc_segmentation_dyn.pyx":71
+    /* "ctc_segmentation/ctc_segmentation_dyn.pyx":74
  *         offsets[c] = offset_sum
  *         last_arg_max = -1
  *         last_max = 0             # <<<<<<<<<<<<<<
- *         # Go through all rows of the current column
- *         for t in range((1 if c == 0 else 0), table.shape[0]):
+ *         # flag for setting stay transition cost to zero for blank
+ *         stay_transition_cost_zero = (flags & 1) * int(np.any(ground_truth[c, :] == 0))
  */
     __pyx_v_last_max = 0.0;
 
-    /* "ctc_segmentation/ctc_segmentation_dyn.pyx":73
+    /* "ctc_segmentation/ctc_segmentation_dyn.pyx":76
  *         last_max = 0
+ *         # flag for setting stay transition cost to zero for blank
+ *         stay_transition_cost_zero = (flags & 1) * int(np.any(ground_truth[c, :] == 0))             # <<<<<<<<<<<<<<
+ *         # Go through all rows of the current column
+ *         for t in range((1 if c == 0 else 0), table.shape[0]):
+ */
+    __pyx_t_3 = __Pyx_PyInt_From_long((__pyx_v_flags & 1)); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 76, __pyx_L1_error)
+    __Pyx_GOTREF(__pyx_t_3);
+    __Pyx_GetModuleGlobalName(__pyx_t_4, __pyx_n_s_np); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 76, __pyx_L1_error)
+    __Pyx_GOTREF(__pyx_t_4);
+    __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_t_4, __pyx_n_s_any); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 76, __pyx_L1_error)
+    __Pyx_GOTREF(__pyx_t_1);
+    __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
+    __pyx_t_4 = __Pyx_PyInt_From_int(__pyx_v_c); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 76, __pyx_L1_error)
+    __Pyx_GOTREF(__pyx_t_4);
+    __pyx_t_5 = PyTuple_New(2); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 76, __pyx_L1_error)
+    __Pyx_GOTREF(__pyx_t_5);
+    __Pyx_GIVEREF(__pyx_t_4);
+    PyTuple_SET_ITEM(__pyx_t_5, 0, __pyx_t_4);
+    __Pyx_INCREF(__pyx_slice_);
+    __Pyx_GIVEREF(__pyx_slice_);
+    PyTuple_SET_ITEM(__pyx_t_5, 1, __pyx_slice_);
+    __pyx_t_4 = 0;
+    __pyx_t_4 = __Pyx_PyObject_GetItem(((PyObject *)__pyx_v_ground_truth), __pyx_t_5); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 76, __pyx_L1_error)
+    __Pyx_GOTREF(__pyx_t_4);
+    __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
+    __pyx_t_5 = __Pyx_PyInt_EqObjC(__pyx_t_4, __pyx_int_0, 0, 0); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 76, __pyx_L1_error)
+    __Pyx_GOTREF(__pyx_t_5);
+    __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
+    __pyx_t_4 = NULL;
+    if (CYTHON_UNPACK_METHODS && unlikely(PyMethod_Check(__pyx_t_1))) {
+      __pyx_t_4 = PyMethod_GET_SELF(__pyx_t_1);
+      if (likely(__pyx_t_4)) {
+        PyObject* function = PyMethod_GET_FUNCTION(__pyx_t_1);
+        __Pyx_INCREF(__pyx_t_4);
+        __Pyx_INCREF(function);
+        __Pyx_DECREF_SET(__pyx_t_1, function);
+      }
+    }
+    __pyx_t_7 = (__pyx_t_4) ? __Pyx_PyObject_Call2Args(__pyx_t_1, __pyx_t_4, __pyx_t_5) : __Pyx_PyObject_CallOneArg(__pyx_t_1, __pyx_t_5);
+    __Pyx_XDECREF(__pyx_t_4); __pyx_t_4 = 0;
+    __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
+    if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 76, __pyx_L1_error)
+    __Pyx_GOTREF(__pyx_t_7);
+    __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
+    __pyx_t_1 = __Pyx_PyNumber_Int(__pyx_t_7); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 76, __pyx_L1_error)
+    __Pyx_GOTREF(__pyx_t_1);
+    __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
+    __pyx_t_7 = PyNumber_Multiply(__pyx_t_3, __pyx_t_1); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 76, __pyx_L1_error)
+    __Pyx_GOTREF(__pyx_t_7);
+    __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
+    __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
+    __pyx_t_17 = __Pyx_PyInt_As_int(__pyx_t_7); if (unlikely((__pyx_t_17 == (int)-1) && PyErr_Occurred())) __PYX_ERR(0, 76, __pyx_L1_error)
+    __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
+    __pyx_v_stay_transition_cost_zero = __pyx_t_17;
+
+    /* "ctc_segmentation/ctc_segmentation_dyn.pyx":78
+ *         stay_transition_cost_zero = (flags & 1) * int(np.any(ground_truth[c, :] == 0))
  *         # Go through all rows of the current column
  *         for t in range((1 if c == 0 else 0), table.shape[0]):             # <<<<<<<<<<<<<<
  *             # Compute max switch probability
@@ -2496,7 +2575,7 @@ static PyObject *__pyx_pf_16ctc_segmentation_20ctc_segmentation_dyn_cython_fill_
     for (__pyx_t_22 = __pyx_t_17; __pyx_t_22 < __pyx_t_18; __pyx_t_22+=1) {
       __pyx_v_t = __pyx_t_22;
 
-      /* "ctc_segmentation/ctc_segmentation_dyn.pyx":75
+      /* "ctc_segmentation/ctc_segmentation_dyn.pyx":80
  *         for t in range((1 if c == 0 else 0), table.shape[0]):
  *             # Compute max switch probability
  *             switch_prob = prob_max             # <<<<<<<<<<<<<<
@@ -2505,7 +2584,7 @@ static PyObject *__pyx_pf_16ctc_segmentation_20ctc_segmentation_dyn_cython_fill_
  */
       __pyx_v_switch_prob = __pyx_v_prob_max;
 
-      /* "ctc_segmentation/ctc_segmentation_dyn.pyx":76
+      /* "ctc_segmentation/ctc_segmentation_dyn.pyx":81
  *             # Compute max switch probability
  *             switch_prob = prob_max
  *             max_lpz_prob = prob_max             # <<<<<<<<<<<<<<
@@ -2514,7 +2593,7 @@ static PyObject *__pyx_pf_16ctc_segmentation_20ctc_segmentation_dyn_cython_fill_
  */
       __pyx_v_max_lpz_prob = __pyx_v_prob_max;
 
-      /* "ctc_segmentation/ctc_segmentation_dyn.pyx":77
+      /* "ctc_segmentation/ctc_segmentation_dyn.pyx":82
  *             switch_prob = prob_max
  *             max_lpz_prob = prob_max
  *             for s in range(ground_truth.shape[1]):             # <<<<<<<<<<<<<<
@@ -2526,7 +2605,7 @@ static PyObject *__pyx_pf_16ctc_segmentation_20ctc_segmentation_dyn_cython_fill_
       for (__pyx_t_25 = 0; __pyx_t_25 < __pyx_t_24; __pyx_t_25+=1) {
         __pyx_v_s = __pyx_t_25;
 
-        /* "ctc_segmentation/ctc_segmentation_dyn.pyx":78
+        /* "ctc_segmentation/ctc_segmentation_dyn.pyx":83
  *             max_lpz_prob = prob_max
  *             for s in range(ground_truth.shape[1]):
  *                 if ground_truth[c, s] != -1:             # <<<<<<<<<<<<<<
@@ -2546,12 +2625,12 @@ static PyObject *__pyx_pf_16ctc_segmentation_20ctc_segmentation_dyn_cython_fill_
         } else if (unlikely(__pyx_t_12 >= __pyx_pybuffernd_ground_truth.diminfo[1].shape)) __pyx_t_26 = 1;
         if (unlikely(__pyx_t_26 != -1)) {
           __Pyx_RaiseBufferIndexError(__pyx_t_26);
-          __PYX_ERR(0, 78, __pyx_L1_error)
+          __PYX_ERR(0, 83, __pyx_L1_error)
         }
         __pyx_t_15 = (((*__Pyx_BufPtrStrided2d(__pyx_t_5numpy_int_t *, __pyx_pybuffernd_ground_truth.rcbuffer->pybuffer.buf, __pyx_t_13, __pyx_pybuffernd_ground_truth.diminfo[0].strides, __pyx_t_12, __pyx_pybuffernd_ground_truth.diminfo[1].strides)) != -1L) != 0);
         if (__pyx_t_15) {
 
-          /* "ctc_segmentation/ctc_segmentation_dyn.pyx":79
+          /* "ctc_segmentation/ctc_segmentation_dyn.pyx":84
  *             for s in range(ground_truth.shape[1]):
  *                 if ground_truth[c, s] != -1:
  *                     if t >= table.shape[0] - (cur_offset[s] - 1) or t - 1 + cur_offset[s] < 0 or c == 0:             # <<<<<<<<<<<<<<
@@ -2566,7 +2645,7 @@ static PyObject *__pyx_pf_16ctc_segmentation_20ctc_segmentation_dyn_cython_fill_
           } else if (unlikely(__pyx_t_12 >= __pyx_pybuffernd_cur_offset.diminfo[0].shape)) __pyx_t_26 = 0;
           if (unlikely(__pyx_t_26 != -1)) {
             __Pyx_RaiseBufferIndexError(__pyx_t_26);
-            __PYX_ERR(0, 79, __pyx_L1_error)
+            __PYX_ERR(0, 84, __pyx_L1_error)
           }
           __pyx_t_27 = ((__pyx_v_t >= ((__pyx_v_table->dimensions[0]) - ((*__Pyx_BufPtrStrided1d(__pyx_t_5numpy_int_t *, __pyx_pybuffernd_cur_offset.rcbuffer->pybuffer.buf, __pyx_t_12, __pyx_pybuffernd_cur_offset.diminfo[0].strides)) - 1))) != 0);
           if (!__pyx_t_27) {
@@ -2582,7 +2661,7 @@ static PyObject *__pyx_pf_16ctc_segmentation_20ctc_segmentation_dyn_cython_fill_
           } else if (unlikely(__pyx_t_12 >= __pyx_pybuffernd_cur_offset.diminfo[0].shape)) __pyx_t_26 = 0;
           if (unlikely(__pyx_t_26 != -1)) {
             __Pyx_RaiseBufferIndexError(__pyx_t_26);
-            __PYX_ERR(0, 79, __pyx_L1_error)
+            __PYX_ERR(0, 84, __pyx_L1_error)
           }
           __pyx_t_27 = ((((__pyx_v_t - 1) + (*__Pyx_BufPtrStrided1d(__pyx_t_5numpy_int_t *, __pyx_pybuffernd_cur_offset.rcbuffer->pybuffer.buf, __pyx_t_12, __pyx_pybuffernd_cur_offset.diminfo[0].strides))) < 0) != 0);
           if (!__pyx_t_27) {
@@ -2595,7 +2674,7 @@ static PyObject *__pyx_pf_16ctc_segmentation_20ctc_segmentation_dyn_cython_fill_
           __pyx_L14_bool_binop_done:;
           if (__pyx_t_15) {
 
-            /* "ctc_segmentation/ctc_segmentation_dyn.pyx":80
+            /* "ctc_segmentation/ctc_segmentation_dyn.pyx":85
  *                 if ground_truth[c, s] != -1:
  *                     if t >= table.shape[0] - (cur_offset[s] - 1) or t - 1 + cur_offset[s] < 0 or c == 0:
  *                         p = prob_max             # <<<<<<<<<<<<<<
@@ -2604,7 +2683,7 @@ static PyObject *__pyx_pf_16ctc_segmentation_20ctc_segmentation_dyn_cython_fill_
  */
             __pyx_v_p = __pyx_v_prob_max;
 
-            /* "ctc_segmentation/ctc_segmentation_dyn.pyx":79
+            /* "ctc_segmentation/ctc_segmentation_dyn.pyx":84
  *             for s in range(ground_truth.shape[1]):
  *                 if ground_truth[c, s] != -1:
  *                     if t >= table.shape[0] - (cur_offset[s] - 1) or t - 1 + cur_offset[s] < 0 or c == 0:             # <<<<<<<<<<<<<<
@@ -2614,7 +2693,7 @@ static PyObject *__pyx_pf_16ctc_segmentation_20ctc_segmentation_dyn_cython_fill_
             goto __pyx_L13;
           }
 
-          /* "ctc_segmentation/ctc_segmentation_dyn.pyx":82
+          /* "ctc_segmentation/ctc_segmentation_dyn.pyx":87
  *                         p = prob_max
  *                     else:
  *                         p = table[t - 1 + cur_offset[s], c - (s + 1)] + lpz[t + offset_sum, ground_truth[c, s]]             # <<<<<<<<<<<<<<
@@ -2630,7 +2709,7 @@ static PyObject *__pyx_pf_16ctc_segmentation_20ctc_segmentation_dyn_cython_fill_
             } else if (unlikely(__pyx_t_12 >= __pyx_pybuffernd_cur_offset.diminfo[0].shape)) __pyx_t_26 = 0;
             if (unlikely(__pyx_t_26 != -1)) {
               __Pyx_RaiseBufferIndexError(__pyx_t_26);
-              __PYX_ERR(0, 82, __pyx_L1_error)
+              __PYX_ERR(0, 87, __pyx_L1_error)
             }
             __pyx_t_13 = ((__pyx_v_t - 1) + (*__Pyx_BufPtrStrided1d(__pyx_t_5numpy_int_t *, __pyx_pybuffernd_cur_offset.rcbuffer->pybuffer.buf, __pyx_t_12, __pyx_pybuffernd_cur_offset.diminfo[0].strides)));
             __pyx_t_28 = (__pyx_v_c - (__pyx_v_s + 1));
@@ -2645,7 +2724,7 @@ static PyObject *__pyx_pf_16ctc_segmentation_20ctc_segmentation_dyn_cython_fill_
             } else if (unlikely(__pyx_t_28 >= __pyx_pybuffernd_table.diminfo[1].shape)) __pyx_t_26 = 1;
             if (unlikely(__pyx_t_26 != -1)) {
               __Pyx_RaiseBufferIndexError(__pyx_t_26);
-              __PYX_ERR(0, 82, __pyx_L1_error)
+              __PYX_ERR(0, 87, __pyx_L1_error)
             }
             __pyx_t_29 = __pyx_v_c;
             __pyx_t_30 = __pyx_v_s;
@@ -2660,7 +2739,7 @@ static PyObject *__pyx_pf_16ctc_segmentation_20ctc_segmentation_dyn_cython_fill_
             } else if (unlikely(__pyx_t_30 >= __pyx_pybuffernd_ground_truth.diminfo[1].shape)) __pyx_t_26 = 1;
             if (unlikely(__pyx_t_26 != -1)) {
               __Pyx_RaiseBufferIndexError(__pyx_t_26);
-              __PYX_ERR(0, 82, __pyx_L1_error)
+              __PYX_ERR(0, 87, __pyx_L1_error)
             }
             __pyx_t_31 = (__pyx_v_t + __pyx_v_offset_sum);
             __pyx_t_32 = (*__Pyx_BufPtrStrided2d(__pyx_t_5numpy_int_t *, __pyx_pybuffernd_ground_truth.rcbuffer->pybuffer.buf, __pyx_t_29, __pyx_pybuffernd_ground_truth.diminfo[0].strides, __pyx_t_30, __pyx_pybuffernd_ground_truth.diminfo[1].strides));
@@ -2675,13 +2754,13 @@ static PyObject *__pyx_pf_16ctc_segmentation_20ctc_segmentation_dyn_cython_fill_
             } else if (unlikely(__pyx_t_32 >= __pyx_pybuffernd_lpz.diminfo[1].shape)) __pyx_t_26 = 1;
             if (unlikely(__pyx_t_26 != -1)) {
               __Pyx_RaiseBufferIndexError(__pyx_t_26);
-              __PYX_ERR(0, 82, __pyx_L1_error)
+              __PYX_ERR(0, 87, __pyx_L1_error)
             }
             __pyx_v_p = ((*__Pyx_BufPtrStrided2d(__pyx_t_5numpy_float32_t *, __pyx_pybuffernd_table.rcbuffer->pybuffer.buf, __pyx_t_13, __pyx_pybuffernd_table.diminfo[0].strides, __pyx_t_28, __pyx_pybuffernd_table.diminfo[1].strides)) + (*__Pyx_BufPtrStrided2d(__pyx_t_5numpy_float32_t *, __pyx_pybuffernd_lpz.rcbuffer->pybuffer.buf, __pyx_t_31, __pyx_pybuffernd_lpz.diminfo[0].strides, __pyx_t_32, __pyx_pybuffernd_lpz.diminfo[1].strides)));
           }
           __pyx_L13:;
 
-          /* "ctc_segmentation/ctc_segmentation_dyn.pyx":83
+          /* "ctc_segmentation/ctc_segmentation_dyn.pyx":88
  *                     else:
  *                         p = table[t - 1 + cur_offset[s], c - (s + 1)] + lpz[t + offset_sum, ground_truth[c, s]]
  *                     switch_prob = max(switch_prob, p)             # <<<<<<<<<<<<<<
@@ -2697,7 +2776,7 @@ static PyObject *__pyx_pf_16ctc_segmentation_20ctc_segmentation_dyn_cython_fill_
           }
           __pyx_v_switch_prob = __pyx_t_35;
 
-          /* "ctc_segmentation/ctc_segmentation_dyn.pyx":84
+          /* "ctc_segmentation/ctc_segmentation_dyn.pyx":89
  *                         p = table[t - 1 + cur_offset[s], c - (s + 1)] + lpz[t + offset_sum, ground_truth[c, s]]
  *                     switch_prob = max(switch_prob, p)
  *                     max_lpz_prob = max(max_lpz_prob, lpz[t + offset_sum, ground_truth[c, s]])             # <<<<<<<<<<<<<<
@@ -2717,7 +2796,7 @@ static PyObject *__pyx_pf_16ctc_segmentation_20ctc_segmentation_dyn_cython_fill_
           } else if (unlikely(__pyx_t_29 >= __pyx_pybuffernd_ground_truth.diminfo[1].shape)) __pyx_t_26 = 1;
           if (unlikely(__pyx_t_26 != -1)) {
             __Pyx_RaiseBufferIndexError(__pyx_t_26);
-            __PYX_ERR(0, 84, __pyx_L1_error)
+            __PYX_ERR(0, 89, __pyx_L1_error)
           }
           __pyx_t_32 = (__pyx_v_t + __pyx_v_offset_sum);
           __pyx_t_31 = (*__Pyx_BufPtrStrided2d(__pyx_t_5numpy_int_t *, __pyx_pybuffernd_ground_truth.rcbuffer->pybuffer.buf, __pyx_t_30, __pyx_pybuffernd_ground_truth.diminfo[0].strides, __pyx_t_29, __pyx_pybuffernd_ground_truth.diminfo[1].strides));
@@ -2732,7 +2811,7 @@ static PyObject *__pyx_pf_16ctc_segmentation_20ctc_segmentation_dyn_cython_fill_
           } else if (unlikely(__pyx_t_31 >= __pyx_pybuffernd_lpz.diminfo[1].shape)) __pyx_t_26 = 1;
           if (unlikely(__pyx_t_26 != -1)) {
             __Pyx_RaiseBufferIndexError(__pyx_t_26);
-            __PYX_ERR(0, 84, __pyx_L1_error)
+            __PYX_ERR(0, 89, __pyx_L1_error)
           }
           __pyx_t_36 = (*__Pyx_BufPtrStrided2d(__pyx_t_5numpy_float32_t *, __pyx_pybuffernd_lpz.rcbuffer->pybuffer.buf, __pyx_t_32, __pyx_pybuffernd_lpz.diminfo[0].strides, __pyx_t_31, __pyx_pybuffernd_lpz.diminfo[1].strides));
           __pyx_t_35 = __pyx_v_max_lpz_prob;
@@ -2743,7 +2822,7 @@ static PyObject *__pyx_pf_16ctc_segmentation_20ctc_segmentation_dyn_cython_fill_
           }
           __pyx_v_max_lpz_prob = __pyx_t_37;
 
-          /* "ctc_segmentation/ctc_segmentation_dyn.pyx":78
+          /* "ctc_segmentation/ctc_segmentation_dyn.pyx":83
  *             max_lpz_prob = prob_max
  *             for s in range(ground_truth.shape[1]):
  *                 if ground_truth[c, s] != -1:             # <<<<<<<<<<<<<<
@@ -2753,7 +2832,7 @@ static PyObject *__pyx_pf_16ctc_segmentation_20ctc_segmentation_dyn_cython_fill_
         }
       }
 
-      /* "ctc_segmentation/ctc_segmentation_dyn.pyx":86
+      /* "ctc_segmentation/ctc_segmentation_dyn.pyx":91
  *                     max_lpz_prob = max(max_lpz_prob, lpz[t + offset_sum, ground_truth[c, s]])
  *             # Compute stay probability
  *             if t - 1 < 0:             # <<<<<<<<<<<<<<
@@ -2763,7 +2842,7 @@ static PyObject *__pyx_pf_16ctc_segmentation_20ctc_segmentation_dyn_cython_fill_
       __pyx_t_15 = (((__pyx_v_t - 1) < 0) != 0);
       if (__pyx_t_15) {
 
-        /* "ctc_segmentation/ctc_segmentation_dyn.pyx":87
+        /* "ctc_segmentation/ctc_segmentation_dyn.pyx":92
  *             # Compute stay probability
  *             if t - 1 < 0:
  *                 stay_prob = prob_max             # <<<<<<<<<<<<<<
@@ -2772,7 +2851,7 @@ static PyObject *__pyx_pf_16ctc_segmentation_20ctc_segmentation_dyn_cython_fill_
  */
         __pyx_v_stay_prob = __pyx_v_prob_max;
 
-        /* "ctc_segmentation/ctc_segmentation_dyn.pyx":86
+        /* "ctc_segmentation/ctc_segmentation_dyn.pyx":91
  *                     max_lpz_prob = max(max_lpz_prob, lpz[t + offset_sum, ground_truth[c, s]])
  *             # Compute stay probability
  *             if t - 1 < 0:             # <<<<<<<<<<<<<<
@@ -2782,43 +2861,52 @@ static PyObject *__pyx_pf_16ctc_segmentation_20ctc_segmentation_dyn_cython_fill_
         goto __pyx_L17;
       }
 
-      /* "ctc_segmentation/ctc_segmentation_dyn.pyx":88
+      /* "ctc_segmentation/ctc_segmentation_dyn.pyx":93
  *             if t - 1 < 0:
  *                 stay_prob = prob_max
  *             elif c == 0:             # <<<<<<<<<<<<<<
  *                 stay_prob = 0
- *             else:
+ *             elif stay_transition_cost_zero:
  */
       __pyx_t_15 = ((__pyx_v_c == 0) != 0);
       if (__pyx_t_15) {
 
-        /* "ctc_segmentation/ctc_segmentation_dyn.pyx":89
+        /* "ctc_segmentation/ctc_segmentation_dyn.pyx":94
  *                 stay_prob = prob_max
  *             elif c == 0:
  *                 stay_prob = 0             # <<<<<<<<<<<<<<
- *             else:
- *                 stay_prob = table[t - 1, c] + max(lpz[t + offset_sum, blank], max_lpz_prob)
+ *             elif stay_transition_cost_zero:
+ *                 stay_prob = table[t - 1, c]
  */
         __pyx_v_stay_prob = 0.0;
 
-        /* "ctc_segmentation/ctc_segmentation_dyn.pyx":88
+        /* "ctc_segmentation/ctc_segmentation_dyn.pyx":93
  *             if t - 1 < 0:
  *                 stay_prob = prob_max
  *             elif c == 0:             # <<<<<<<<<<<<<<
  *                 stay_prob = 0
- *             else:
+ *             elif stay_transition_cost_zero:
  */
         goto __pyx_L17;
       }
 
-      /* "ctc_segmentation/ctc_segmentation_dyn.pyx":91
+      /* "ctc_segmentation/ctc_segmentation_dyn.pyx":95
+ *             elif c == 0:
  *                 stay_prob = 0
+ *             elif stay_transition_cost_zero:             # <<<<<<<<<<<<<<
+ *                 stay_prob = table[t - 1, c]
  *             else:
- *                 stay_prob = table[t - 1, c] + max(lpz[t + offset_sum, blank], max_lpz_prob)             # <<<<<<<<<<<<<<
- *             # Use max of stay and switch prob
- *             table[t, c] = max(switch_prob, stay_prob)
  */
-      /*else*/ {
+      __pyx_t_15 = (__pyx_v_stay_transition_cost_zero != 0);
+      if (__pyx_t_15) {
+
+        /* "ctc_segmentation/ctc_segmentation_dyn.pyx":96
+ *                 stay_prob = 0
+ *             elif stay_transition_cost_zero:
+ *                 stay_prob = table[t - 1, c]             # <<<<<<<<<<<<<<
+ *             else:
+ *                 stay_prob = table[t - 1, c] + max(lpz[t + offset_sum, blank], max_lpz_prob)
+ */
         __pyx_t_29 = (__pyx_v_t - 1);
         __pyx_t_30 = __pyx_v_c;
         __pyx_t_25 = -1;
@@ -2832,7 +2920,42 @@ static PyObject *__pyx_pf_16ctc_segmentation_20ctc_segmentation_dyn_cython_fill_
         } else if (unlikely(__pyx_t_30 >= __pyx_pybuffernd_table.diminfo[1].shape)) __pyx_t_25 = 1;
         if (unlikely(__pyx_t_25 != -1)) {
           __Pyx_RaiseBufferIndexError(__pyx_t_25);
-          __PYX_ERR(0, 91, __pyx_L1_error)
+          __PYX_ERR(0, 96, __pyx_L1_error)
+        }
+        __pyx_v_stay_prob = (*__Pyx_BufPtrStrided2d(__pyx_t_5numpy_float32_t *, __pyx_pybuffernd_table.rcbuffer->pybuffer.buf, __pyx_t_29, __pyx_pybuffernd_table.diminfo[0].strides, __pyx_t_30, __pyx_pybuffernd_table.diminfo[1].strides));
+
+        /* "ctc_segmentation/ctc_segmentation_dyn.pyx":95
+ *             elif c == 0:
+ *                 stay_prob = 0
+ *             elif stay_transition_cost_zero:             # <<<<<<<<<<<<<<
+ *                 stay_prob = table[t - 1, c]
+ *             else:
+ */
+        goto __pyx_L17;
+      }
+
+      /* "ctc_segmentation/ctc_segmentation_dyn.pyx":98
+ *                 stay_prob = table[t - 1, c]
+ *             else:
+ *                 stay_prob = table[t - 1, c] + max(lpz[t + offset_sum, blank], max_lpz_prob)             # <<<<<<<<<<<<<<
+ *             # Use max of stay and switch prob
+ *             table[t, c] = max(switch_prob, stay_prob)
+ */
+      /*else*/ {
+        __pyx_t_30 = (__pyx_v_t - 1);
+        __pyx_t_29 = __pyx_v_c;
+        __pyx_t_25 = -1;
+        if (__pyx_t_30 < 0) {
+          __pyx_t_30 += __pyx_pybuffernd_table.diminfo[0].shape;
+          if (unlikely(__pyx_t_30 < 0)) __pyx_t_25 = 0;
+        } else if (unlikely(__pyx_t_30 >= __pyx_pybuffernd_table.diminfo[0].shape)) __pyx_t_25 = 0;
+        if (__pyx_t_29 < 0) {
+          __pyx_t_29 += __pyx_pybuffernd_table.diminfo[1].shape;
+          if (unlikely(__pyx_t_29 < 0)) __pyx_t_25 = 1;
+        } else if (unlikely(__pyx_t_29 >= __pyx_pybuffernd_table.diminfo[1].shape)) __pyx_t_25 = 1;
+        if (unlikely(__pyx_t_25 != -1)) {
+          __Pyx_RaiseBufferIndexError(__pyx_t_25);
+          __PYX_ERR(0, 98, __pyx_L1_error)
         }
         __pyx_t_35 = __pyx_v_max_lpz_prob;
         __pyx_t_31 = (__pyx_v_t + __pyx_v_offset_sum);
@@ -2848,7 +2971,7 @@ static PyObject *__pyx_pf_16ctc_segmentation_20ctc_segmentation_dyn_cython_fill_
         } else if (unlikely(__pyx_t_32 >= __pyx_pybuffernd_lpz.diminfo[1].shape)) __pyx_t_25 = 1;
         if (unlikely(__pyx_t_25 != -1)) {
           __Pyx_RaiseBufferIndexError(__pyx_t_25);
-          __PYX_ERR(0, 91, __pyx_L1_error)
+          __PYX_ERR(0, 98, __pyx_L1_error)
         }
         __pyx_t_37 = (*__Pyx_BufPtrStrided2d(__pyx_t_5numpy_float32_t *, __pyx_pybuffernd_lpz.rcbuffer->pybuffer.buf, __pyx_t_31, __pyx_pybuffernd_lpz.diminfo[0].strides, __pyx_t_32, __pyx_pybuffernd_lpz.diminfo[1].strides));
         if (((__pyx_t_35 > __pyx_t_37) != 0)) {
@@ -2856,11 +2979,11 @@ static PyObject *__pyx_pf_16ctc_segmentation_20ctc_segmentation_dyn_cython_fill_
         } else {
           __pyx_t_36 = __pyx_t_37;
         }
-        __pyx_v_stay_prob = ((*__Pyx_BufPtrStrided2d(__pyx_t_5numpy_float32_t *, __pyx_pybuffernd_table.rcbuffer->pybuffer.buf, __pyx_t_29, __pyx_pybuffernd_table.diminfo[0].strides, __pyx_t_30, __pyx_pybuffernd_table.diminfo[1].strides)) + __pyx_t_36);
+        __pyx_v_stay_prob = ((*__Pyx_BufPtrStrided2d(__pyx_t_5numpy_float32_t *, __pyx_pybuffernd_table.rcbuffer->pybuffer.buf, __pyx_t_30, __pyx_pybuffernd_table.diminfo[0].strides, __pyx_t_29, __pyx_pybuffernd_table.diminfo[1].strides)) + __pyx_t_36);
       }
       __pyx_L17:;
 
-      /* "ctc_segmentation/ctc_segmentation_dyn.pyx":93
+      /* "ctc_segmentation/ctc_segmentation_dyn.pyx":100
  *                 stay_prob = table[t - 1, c] + max(lpz[t + offset_sum, blank], max_lpz_prob)
  *             # Use max of stay and switch prob
  *             table[t, c] = max(switch_prob, stay_prob)             # <<<<<<<<<<<<<<
@@ -2873,36 +2996,6 @@ static PyObject *__pyx_pf_16ctc_segmentation_20ctc_segmentation_dyn_cython_fill_
         __pyx_t_34 = __pyx_t_35;
       } else {
         __pyx_t_34 = __pyx_t_33;
-      }
-      __pyx_t_30 = __pyx_v_t;
-      __pyx_t_29 = __pyx_v_c;
-      __pyx_t_25 = -1;
-      if (__pyx_t_30 < 0) {
-        __pyx_t_30 += __pyx_pybuffernd_table.diminfo[0].shape;
-        if (unlikely(__pyx_t_30 < 0)) __pyx_t_25 = 0;
-      } else if (unlikely(__pyx_t_30 >= __pyx_pybuffernd_table.diminfo[0].shape)) __pyx_t_25 = 0;
-      if (__pyx_t_29 < 0) {
-        __pyx_t_29 += __pyx_pybuffernd_table.diminfo[1].shape;
-        if (unlikely(__pyx_t_29 < 0)) __pyx_t_25 = 1;
-      } else if (unlikely(__pyx_t_29 >= __pyx_pybuffernd_table.diminfo[1].shape)) __pyx_t_25 = 1;
-      if (unlikely(__pyx_t_25 != -1)) {
-        __Pyx_RaiseBufferIndexError(__pyx_t_25);
-        __PYX_ERR(0, 93, __pyx_L1_error)
-      }
-      *__Pyx_BufPtrStrided2d(__pyx_t_5numpy_float32_t *, __pyx_pybuffernd_table.rcbuffer->pybuffer.buf, __pyx_t_30, __pyx_pybuffernd_table.diminfo[0].strides, __pyx_t_29, __pyx_pybuffernd_table.diminfo[1].strides) = __pyx_t_34;
-
-      /* "ctc_segmentation/ctc_segmentation_dyn.pyx":95
- *             table[t, c] = max(switch_prob, stay_prob)
- *             # Remember the row with the max prob
- *             if last_arg_max == -1 or last_max < table[t, c]:             # <<<<<<<<<<<<<<
- *                 last_max = table[t, c]
- *                 last_arg_max = t
- */
-      __pyx_t_27 = ((__pyx_v_last_arg_max == -1L) != 0);
-      if (!__pyx_t_27) {
-      } else {
-        __pyx_t_15 = __pyx_t_27;
-        goto __pyx_L19_bool_binop_done;
       }
       __pyx_t_29 = __pyx_v_t;
       __pyx_t_30 = __pyx_v_c;
@@ -2917,38 +3010,68 @@ static PyObject *__pyx_pf_16ctc_segmentation_20ctc_segmentation_dyn_cython_fill_
       } else if (unlikely(__pyx_t_30 >= __pyx_pybuffernd_table.diminfo[1].shape)) __pyx_t_25 = 1;
       if (unlikely(__pyx_t_25 != -1)) {
         __Pyx_RaiseBufferIndexError(__pyx_t_25);
-        __PYX_ERR(0, 95, __pyx_L1_error)
+        __PYX_ERR(0, 100, __pyx_L1_error)
       }
-      __pyx_t_27 = ((__pyx_v_last_max < (*__Pyx_BufPtrStrided2d(__pyx_t_5numpy_float32_t *, __pyx_pybuffernd_table.rcbuffer->pybuffer.buf, __pyx_t_29, __pyx_pybuffernd_table.diminfo[0].strides, __pyx_t_30, __pyx_pybuffernd_table.diminfo[1].strides))) != 0);
+      *__Pyx_BufPtrStrided2d(__pyx_t_5numpy_float32_t *, __pyx_pybuffernd_table.rcbuffer->pybuffer.buf, __pyx_t_29, __pyx_pybuffernd_table.diminfo[0].strides, __pyx_t_30, __pyx_pybuffernd_table.diminfo[1].strides) = __pyx_t_34;
+
+      /* "ctc_segmentation/ctc_segmentation_dyn.pyx":102
+ *             table[t, c] = max(switch_prob, stay_prob)
+ *             # Remember the row with the max prob
+ *             if last_arg_max == -1 or last_max < table[t, c]:             # <<<<<<<<<<<<<<
+ *                 last_max = table[t, c]
+ *                 last_arg_max = t
+ */
+      __pyx_t_27 = ((__pyx_v_last_arg_max == -1L) != 0);
+      if (!__pyx_t_27) {
+      } else {
+        __pyx_t_15 = __pyx_t_27;
+        goto __pyx_L19_bool_binop_done;
+      }
+      __pyx_t_30 = __pyx_v_t;
+      __pyx_t_29 = __pyx_v_c;
+      __pyx_t_25 = -1;
+      if (__pyx_t_30 < 0) {
+        __pyx_t_30 += __pyx_pybuffernd_table.diminfo[0].shape;
+        if (unlikely(__pyx_t_30 < 0)) __pyx_t_25 = 0;
+      } else if (unlikely(__pyx_t_30 >= __pyx_pybuffernd_table.diminfo[0].shape)) __pyx_t_25 = 0;
+      if (__pyx_t_29 < 0) {
+        __pyx_t_29 += __pyx_pybuffernd_table.diminfo[1].shape;
+        if (unlikely(__pyx_t_29 < 0)) __pyx_t_25 = 1;
+      } else if (unlikely(__pyx_t_29 >= __pyx_pybuffernd_table.diminfo[1].shape)) __pyx_t_25 = 1;
+      if (unlikely(__pyx_t_25 != -1)) {
+        __Pyx_RaiseBufferIndexError(__pyx_t_25);
+        __PYX_ERR(0, 102, __pyx_L1_error)
+      }
+      __pyx_t_27 = ((__pyx_v_last_max < (*__Pyx_BufPtrStrided2d(__pyx_t_5numpy_float32_t *, __pyx_pybuffernd_table.rcbuffer->pybuffer.buf, __pyx_t_30, __pyx_pybuffernd_table.diminfo[0].strides, __pyx_t_29, __pyx_pybuffernd_table.diminfo[1].strides))) != 0);
       __pyx_t_15 = __pyx_t_27;
       __pyx_L19_bool_binop_done:;
       if (__pyx_t_15) {
 
-        /* "ctc_segmentation/ctc_segmentation_dyn.pyx":96
+        /* "ctc_segmentation/ctc_segmentation_dyn.pyx":103
  *             # Remember the row with the max prob
  *             if last_arg_max == -1 or last_max < table[t, c]:
  *                 last_max = table[t, c]             # <<<<<<<<<<<<<<
  *                 last_arg_max = t
  *     # Return cell index with max prob in last column
  */
-        __pyx_t_30 = __pyx_v_t;
-        __pyx_t_29 = __pyx_v_c;
+        __pyx_t_29 = __pyx_v_t;
+        __pyx_t_30 = __pyx_v_c;
         __pyx_t_25 = -1;
-        if (__pyx_t_30 < 0) {
-          __pyx_t_30 += __pyx_pybuffernd_table.diminfo[0].shape;
-          if (unlikely(__pyx_t_30 < 0)) __pyx_t_25 = 0;
-        } else if (unlikely(__pyx_t_30 >= __pyx_pybuffernd_table.diminfo[0].shape)) __pyx_t_25 = 0;
         if (__pyx_t_29 < 0) {
-          __pyx_t_29 += __pyx_pybuffernd_table.diminfo[1].shape;
-          if (unlikely(__pyx_t_29 < 0)) __pyx_t_25 = 1;
-        } else if (unlikely(__pyx_t_29 >= __pyx_pybuffernd_table.diminfo[1].shape)) __pyx_t_25 = 1;
+          __pyx_t_29 += __pyx_pybuffernd_table.diminfo[0].shape;
+          if (unlikely(__pyx_t_29 < 0)) __pyx_t_25 = 0;
+        } else if (unlikely(__pyx_t_29 >= __pyx_pybuffernd_table.diminfo[0].shape)) __pyx_t_25 = 0;
+        if (__pyx_t_30 < 0) {
+          __pyx_t_30 += __pyx_pybuffernd_table.diminfo[1].shape;
+          if (unlikely(__pyx_t_30 < 0)) __pyx_t_25 = 1;
+        } else if (unlikely(__pyx_t_30 >= __pyx_pybuffernd_table.diminfo[1].shape)) __pyx_t_25 = 1;
         if (unlikely(__pyx_t_25 != -1)) {
           __Pyx_RaiseBufferIndexError(__pyx_t_25);
-          __PYX_ERR(0, 96, __pyx_L1_error)
+          __PYX_ERR(0, 103, __pyx_L1_error)
         }
-        __pyx_v_last_max = (*__Pyx_BufPtrStrided2d(__pyx_t_5numpy_float32_t *, __pyx_pybuffernd_table.rcbuffer->pybuffer.buf, __pyx_t_30, __pyx_pybuffernd_table.diminfo[0].strides, __pyx_t_29, __pyx_pybuffernd_table.diminfo[1].strides));
+        __pyx_v_last_max = (*__Pyx_BufPtrStrided2d(__pyx_t_5numpy_float32_t *, __pyx_pybuffernd_table.rcbuffer->pybuffer.buf, __pyx_t_29, __pyx_pybuffernd_table.diminfo[0].strides, __pyx_t_30, __pyx_pybuffernd_table.diminfo[1].strides));
 
-        /* "ctc_segmentation/ctc_segmentation_dyn.pyx":97
+        /* "ctc_segmentation/ctc_segmentation_dyn.pyx":104
  *             if last_arg_max == -1 or last_max < table[t, c]:
  *                 last_max = table[t, c]
  *                 last_arg_max = t             # <<<<<<<<<<<<<<
@@ -2957,7 +3080,7 @@ static PyObject *__pyx_pf_16ctc_segmentation_20ctc_segmentation_dyn_cython_fill_
  */
         __pyx_v_last_arg_max = __pyx_v_t;
 
-        /* "ctc_segmentation/ctc_segmentation_dyn.pyx":95
+        /* "ctc_segmentation/ctc_segmentation_dyn.pyx":102
  *             table[t, c] = max(switch_prob, stay_prob)
  *             # Remember the row with the max prob
  *             if last_arg_max == -1 or last_max < table[t, c]:             # <<<<<<<<<<<<<<
@@ -2968,7 +3091,7 @@ static PyObject *__pyx_pf_16ctc_segmentation_20ctc_segmentation_dyn_cython_fill_
     }
   }
 
-  /* "ctc_segmentation/ctc_segmentation_dyn.pyx":99
+  /* "ctc_segmentation/ctc_segmentation_dyn.pyx":106
  *                 last_arg_max = t
  *     # Return cell index with max prob in last column
  *     c = table.shape[1] - 1             # <<<<<<<<<<<<<<
@@ -2977,67 +3100,67 @@ static PyObject *__pyx_pf_16ctc_segmentation_20ctc_segmentation_dyn_cython_fill_
  */
   __pyx_v_c = ((__pyx_v_table->dimensions[1]) - 1);
 
-  /* "ctc_segmentation/ctc_segmentation_dyn.pyx":100
+  /* "ctc_segmentation/ctc_segmentation_dyn.pyx":107
  *     # Return cell index with max prob in last column
  *     c = table.shape[1] - 1
  *     t = table[:, c].argmax()             # <<<<<<<<<<<<<<
  *     return t, c
  */
-  __pyx_t_7 = __Pyx_PyInt_From_int(__pyx_v_c); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 100, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_t_7);
-  __pyx_t_4 = PyTuple_New(2); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 100, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_t_4);
+  __pyx_t_1 = __Pyx_PyInt_From_int(__pyx_v_c); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 107, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_1);
+  __pyx_t_3 = PyTuple_New(2); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 107, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_3);
   __Pyx_INCREF(__pyx_slice_);
   __Pyx_GIVEREF(__pyx_slice_);
-  PyTuple_SET_ITEM(__pyx_t_4, 0, __pyx_slice_);
-  __Pyx_GIVEREF(__pyx_t_7);
-  PyTuple_SET_ITEM(__pyx_t_4, 1, __pyx_t_7);
-  __pyx_t_7 = 0;
-  __pyx_t_7 = __Pyx_PyObject_GetItem(((PyObject *)__pyx_v_table), __pyx_t_4); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 100, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_t_7);
-  __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-  __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_t_7, __pyx_n_s_argmax); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 100, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_t_4);
-  __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
-  __pyx_t_7 = NULL;
-  if (CYTHON_UNPACK_METHODS && likely(PyMethod_Check(__pyx_t_4))) {
-    __pyx_t_7 = PyMethod_GET_SELF(__pyx_t_4);
-    if (likely(__pyx_t_7)) {
-      PyObject* function = PyMethod_GET_FUNCTION(__pyx_t_4);
-      __Pyx_INCREF(__pyx_t_7);
+  PyTuple_SET_ITEM(__pyx_t_3, 0, __pyx_slice_);
+  __Pyx_GIVEREF(__pyx_t_1);
+  PyTuple_SET_ITEM(__pyx_t_3, 1, __pyx_t_1);
+  __pyx_t_1 = 0;
+  __pyx_t_1 = __Pyx_PyObject_GetItem(((PyObject *)__pyx_v_table), __pyx_t_3); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 107, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_1);
+  __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
+  __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_t_1, __pyx_n_s_argmax); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 107, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_3);
+  __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
+  __pyx_t_1 = NULL;
+  if (CYTHON_UNPACK_METHODS && likely(PyMethod_Check(__pyx_t_3))) {
+    __pyx_t_1 = PyMethod_GET_SELF(__pyx_t_3);
+    if (likely(__pyx_t_1)) {
+      PyObject* function = PyMethod_GET_FUNCTION(__pyx_t_3);
+      __Pyx_INCREF(__pyx_t_1);
       __Pyx_INCREF(function);
-      __Pyx_DECREF_SET(__pyx_t_4, function);
+      __Pyx_DECREF_SET(__pyx_t_3, function);
     }
   }
-  __pyx_t_3 = (__pyx_t_7) ? __Pyx_PyObject_CallOneArg(__pyx_t_4, __pyx_t_7) : __Pyx_PyObject_CallNoArg(__pyx_t_4);
-  __Pyx_XDECREF(__pyx_t_7); __pyx_t_7 = 0;
-  if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 100, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_t_3);
-  __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-  __pyx_t_6 = __Pyx_PyInt_As_int(__pyx_t_3); if (unlikely((__pyx_t_6 == (int)-1) && PyErr_Occurred())) __PYX_ERR(0, 100, __pyx_L1_error)
+  __pyx_t_7 = (__pyx_t_1) ? __Pyx_PyObject_CallOneArg(__pyx_t_3, __pyx_t_1) : __Pyx_PyObject_CallNoArg(__pyx_t_3);
+  __Pyx_XDECREF(__pyx_t_1); __pyx_t_1 = 0;
+  if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 107, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_7);
   __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
+  __pyx_t_6 = __Pyx_PyInt_As_int(__pyx_t_7); if (unlikely((__pyx_t_6 == (int)-1) && PyErr_Occurred())) __PYX_ERR(0, 107, __pyx_L1_error)
+  __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
   __pyx_v_t = __pyx_t_6;
 
-  /* "ctc_segmentation/ctc_segmentation_dyn.pyx":101
+  /* "ctc_segmentation/ctc_segmentation_dyn.pyx":108
  *     c = table.shape[1] - 1
  *     t = table[:, c].argmax()
  *     return t, c             # <<<<<<<<<<<<<<
  */
   __Pyx_XDECREF(__pyx_r);
-  __pyx_t_3 = __Pyx_PyInt_From_int(__pyx_v_t); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 101, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_t_3);
-  __pyx_t_4 = __Pyx_PyInt_From_int(__pyx_v_c); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 101, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_t_4);
-  __pyx_t_7 = PyTuple_New(2); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 101, __pyx_L1_error)
+  __pyx_t_7 = __Pyx_PyInt_From_int(__pyx_v_t); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 108, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_7);
+  __pyx_t_3 = __Pyx_PyInt_From_int(__pyx_v_c); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 108, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_3);
+  __pyx_t_1 = PyTuple_New(2); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 108, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_1);
+  __Pyx_GIVEREF(__pyx_t_7);
+  PyTuple_SET_ITEM(__pyx_t_1, 0, __pyx_t_7);
   __Pyx_GIVEREF(__pyx_t_3);
-  PyTuple_SET_ITEM(__pyx_t_7, 0, __pyx_t_3);
-  __Pyx_GIVEREF(__pyx_t_4);
-  PyTuple_SET_ITEM(__pyx_t_7, 1, __pyx_t_4);
-  __pyx_t_3 = 0;
-  __pyx_t_4 = 0;
-  __pyx_r = __pyx_t_7;
+  PyTuple_SET_ITEM(__pyx_t_1, 1, __pyx_t_3);
   __pyx_t_7 = 0;
+  __pyx_t_3 = 0;
+  __pyx_r = __pyx_t_1;
+  __pyx_t_1 = 0;
   goto __pyx_L0;
 
   /* "ctc_segmentation/ctc_segmentation_dyn.pyx":20
@@ -3973,6 +4096,7 @@ static struct PyModuleDef __pyx_moduledef = {
 static __Pyx_StringTabEntry __pyx_string_tab[] = {
   {&__pyx_kp_u_Average_character_duration, __pyx_k_Average_character_duration, sizeof(__pyx_k_Average_character_duration), 0, 1, 0, 0},
   {&__pyx_n_s_ImportError, __pyx_k_ImportError, sizeof(__pyx_k_ImportError), 0, 0, 1, 1},
+  {&__pyx_n_s_any, __pyx_k_any, sizeof(__pyx_k_any), 0, 0, 1, 1},
   {&__pyx_n_s_argmax, __pyx_k_argmax, sizeof(__pyx_k_argmax), 0, 0, 1, 1},
   {&__pyx_n_s_blank, __pyx_k_blank, sizeof(__pyx_k_blank), 0, 0, 1, 1},
   {&__pyx_n_s_c, __pyx_k_c, sizeof(__pyx_k_c), 0, 0, 1, 1},
@@ -3982,6 +4106,7 @@ static __Pyx_StringTabEntry __pyx_string_tab[] = {
   {&__pyx_n_s_cur_offset, __pyx_k_cur_offset, sizeof(__pyx_k_cur_offset), 0, 0, 1, 1},
   {&__pyx_n_s_cython_fill_table, __pyx_k_cython_fill_table, sizeof(__pyx_k_cython_fill_table), 0, 0, 1, 1},
   {&__pyx_n_s_debug, __pyx_k_debug, sizeof(__pyx_k_debug), 0, 0, 1, 1},
+  {&__pyx_n_s_flags, __pyx_k_flags, sizeof(__pyx_k_flags), 0, 0, 1, 1},
   {&__pyx_n_s_ground_truth, __pyx_k_ground_truth, sizeof(__pyx_k_ground_truth), 0, 0, 1, 1},
   {&__pyx_n_s_higher_offset, __pyx_k_higher_offset, sizeof(__pyx_k_higher_offset), 0, 0, 1, 1},
   {&__pyx_n_s_import, __pyx_k_import, sizeof(__pyx_k_import), 0, 0, 1, 1},
@@ -4009,6 +4134,7 @@ static __Pyx_StringTabEntry __pyx_string_tab[] = {
   {&__pyx_n_s_s, __pyx_k_s, sizeof(__pyx_k_s), 0, 0, 1, 1},
   {&__pyx_n_s_skip_prob, __pyx_k_skip_prob, sizeof(__pyx_k_skip_prob), 0, 0, 1, 1},
   {&__pyx_n_s_stay_prob, __pyx_k_stay_prob, sizeof(__pyx_k_stay_prob), 0, 0, 1, 1},
+  {&__pyx_n_s_stay_transition_cost_zero, __pyx_k_stay_transition_cost_zero, sizeof(__pyx_k_stay_transition_cost_zero), 0, 0, 1, 1},
   {&__pyx_n_s_switch_prob, __pyx_k_switch_prob, sizeof(__pyx_k_switch_prob), 0, 0, 1, 1},
   {&__pyx_n_s_t, __pyx_k_t, sizeof(__pyx_k_t), 0, 0, 1, 1},
   {&__pyx_n_s_table, __pyx_k_table, sizeof(__pyx_k_table), 0, 0, 1, 1},
@@ -4017,7 +4143,7 @@ static __Pyx_StringTabEntry __pyx_string_tab[] = {
   {0, 0, 0, 0, 0, 0, 0}
 };
 static CYTHON_SMALL_CODE int __Pyx_InitCachedBuiltins(void) {
-  __pyx_builtin_range = __Pyx_GetBuiltinName(__pyx_n_s_range); if (!__pyx_builtin_range) __PYX_ERR(0, 57, __pyx_L1_error)
+  __pyx_builtin_range = __Pyx_GetBuiltinName(__pyx_n_s_range); if (!__pyx_builtin_range) __PYX_ERR(0, 60, __pyx_L1_error)
   __pyx_builtin_ImportError = __Pyx_GetBuiltinName(__pyx_n_s_ImportError); if (!__pyx_builtin_ImportError) __PYX_ERR(1, 884, __pyx_L1_error)
   return 0;
   __pyx_L1_error:;
@@ -4028,13 +4154,14 @@ static CYTHON_SMALL_CODE int __Pyx_InitCachedConstants(void) {
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("__Pyx_InitCachedConstants", 0);
 
-  /* "ctc_segmentation/ctc_segmentation_dyn.pyx":100
- *     # Return cell index with max prob in last column
- *     c = table.shape[1] - 1
- *     t = table[:, c].argmax()             # <<<<<<<<<<<<<<
- *     return t, c
+  /* "ctc_segmentation/ctc_segmentation_dyn.pyx":76
+ *         last_max = 0
+ *         # flag for setting stay transition cost to zero for blank
+ *         stay_transition_cost_zero = (flags & 1) * int(np.any(ground_truth[c, :] == 0))             # <<<<<<<<<<<<<<
+ *         # Go through all rows of the current column
+ *         for t in range((1 if c == 0 else 0), table.shape[0]):
  */
-  __pyx_slice_ = PySlice_New(Py_None, Py_None, Py_None); if (unlikely(!__pyx_slice_)) __PYX_ERR(0, 100, __pyx_L1_error)
+  __pyx_slice_ = PySlice_New(Py_None, Py_None, Py_None); if (unlikely(!__pyx_slice_)) __PYX_ERR(0, 76, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_slice_);
   __Pyx_GIVEREF(__pyx_slice_);
 
@@ -4067,10 +4194,10 @@ static CYTHON_SMALL_CODE int __Pyx_InitCachedConstants(void) {
  *                       np.ndarray[np.float32_t, ndim=2] lpz,
  *                       np.ndarray[np.int_t, ndim=2] ground_truth,
  */
-  __pyx_tuple__4 = PyTuple_Pack(22, __pyx_n_s_table, __pyx_n_s_lpz, __pyx_n_s_ground_truth, __pyx_n_s_offsets, __pyx_n_s_blank, __pyx_n_s_c, __pyx_n_s_t, __pyx_n_s_offset, __pyx_n_s_mean_offset, __pyx_n_s_offset_sum, __pyx_n_s_lower_offset, __pyx_n_s_higher_offset, __pyx_n_s_switch_prob, __pyx_n_s_stay_prob, __pyx_n_s_skip_prob, __pyx_n_s_prob_max, __pyx_n_s_last_max, __pyx_n_s_last_arg_max, __pyx_n_s_cur_offset, __pyx_n_s_max_lpz_prob, __pyx_n_s_p, __pyx_n_s_s); if (unlikely(!__pyx_tuple__4)) __PYX_ERR(0, 20, __pyx_L1_error)
+  __pyx_tuple__4 = PyTuple_Pack(24, __pyx_n_s_table, __pyx_n_s_lpz, __pyx_n_s_ground_truth, __pyx_n_s_offsets, __pyx_n_s_blank, __pyx_n_s_flags, __pyx_n_s_c, __pyx_n_s_t, __pyx_n_s_offset, __pyx_n_s_mean_offset, __pyx_n_s_offset_sum, __pyx_n_s_lower_offset, __pyx_n_s_higher_offset, __pyx_n_s_switch_prob, __pyx_n_s_stay_prob, __pyx_n_s_skip_prob, __pyx_n_s_prob_max, __pyx_n_s_last_max, __pyx_n_s_last_arg_max, __pyx_n_s_cur_offset, __pyx_n_s_max_lpz_prob, __pyx_n_s_p, __pyx_n_s_s, __pyx_n_s_stay_transition_cost_zero); if (unlikely(!__pyx_tuple__4)) __PYX_ERR(0, 20, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple__4);
   __Pyx_GIVEREF(__pyx_tuple__4);
-  __pyx_codeobj__5 = (PyObject*)__Pyx_PyCode_New(5, 0, 22, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__4, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_ctc_segmentation_ctc_segmentatio, __pyx_n_s_cython_fill_table, 20, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__5)) __PYX_ERR(0, 20, __pyx_L1_error)
+  __pyx_codeobj__5 = (PyObject*)__Pyx_PyCode_New(6, 0, 24, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__4, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_ctc_segmentation_ctc_segmentatio, __pyx_n_s_cython_fill_table, 20, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__5)) __PYX_ERR(0, 20, __pyx_L1_error)
   __Pyx_RefNannyFinishContext();
   return 0;
   __pyx_L1_error:;
@@ -4080,6 +4207,7 @@ static CYTHON_SMALL_CODE int __Pyx_InitCachedConstants(void) {
 
 static CYTHON_SMALL_CODE int __Pyx_InitGlobals(void) {
   if (__Pyx_InitStrings(__pyx_string_tab) < 0) __PYX_ERR(0, 1, __pyx_L1_error);
+  __pyx_int_0 = PyInt_FromLong(0); if (unlikely(!__pyx_int_0)) __PYX_ERR(0, 1, __pyx_L1_error)
   __pyx_int_1 = PyInt_FromLong(1); if (unlikely(!__pyx_int_1)) __PYX_ERR(0, 1, __pyx_L1_error)
   return 0;
   __pyx_L1_error:;
@@ -5754,6 +5882,73 @@ static CYTHON_INLINE PyObject* __Pyx_PyObject_CallOneArg(PyObject *func, PyObjec
     long r = a - q*b;
     q -= ((r != 0) & ((r ^ b) < 0));
     return q;
+}
+
+/* PyIntCompare */
+  static CYTHON_INLINE PyObject* __Pyx_PyInt_EqObjC(PyObject *op1, PyObject *op2, CYTHON_UNUSED long intval, CYTHON_UNUSED long inplace) {
+    if (op1 == op2) {
+        Py_RETURN_TRUE;
+    }
+    #if PY_MAJOR_VERSION < 3
+    if (likely(PyInt_CheckExact(op1))) {
+        const long b = intval;
+        long a = PyInt_AS_LONG(op1);
+        if (a == b) Py_RETURN_TRUE; else Py_RETURN_FALSE;
+    }
+    #endif
+    #if CYTHON_USE_PYLONG_INTERNALS
+    if (likely(PyLong_CheckExact(op1))) {
+        int unequal;
+        unsigned long uintval;
+        Py_ssize_t size = Py_SIZE(op1);
+        const digit* digits = ((PyLongObject*)op1)->ob_digit;
+        if (intval == 0) {
+            if (size == 0) Py_RETURN_TRUE; else Py_RETURN_FALSE;
+        } else if (intval < 0) {
+            if (size >= 0)
+                Py_RETURN_FALSE;
+            intval = -intval;
+            size = -size;
+        } else {
+            if (size <= 0)
+                Py_RETURN_FALSE;
+        }
+        uintval = (unsigned long) intval;
+#if PyLong_SHIFT * 4 < SIZEOF_LONG*8
+        if (uintval >> (PyLong_SHIFT * 4)) {
+            unequal = (size != 5) || (digits[0] != (uintval & (unsigned long) PyLong_MASK))
+                 | (digits[1] != ((uintval >> (1 * PyLong_SHIFT)) & (unsigned long) PyLong_MASK)) | (digits[2] != ((uintval >> (2 * PyLong_SHIFT)) & (unsigned long) PyLong_MASK)) | (digits[3] != ((uintval >> (3 * PyLong_SHIFT)) & (unsigned long) PyLong_MASK)) | (digits[4] != ((uintval >> (4 * PyLong_SHIFT)) & (unsigned long) PyLong_MASK));
+        } else
+#endif
+#if PyLong_SHIFT * 3 < SIZEOF_LONG*8
+        if (uintval >> (PyLong_SHIFT * 3)) {
+            unequal = (size != 4) || (digits[0] != (uintval & (unsigned long) PyLong_MASK))
+                 | (digits[1] != ((uintval >> (1 * PyLong_SHIFT)) & (unsigned long) PyLong_MASK)) | (digits[2] != ((uintval >> (2 * PyLong_SHIFT)) & (unsigned long) PyLong_MASK)) | (digits[3] != ((uintval >> (3 * PyLong_SHIFT)) & (unsigned long) PyLong_MASK));
+        } else
+#endif
+#if PyLong_SHIFT * 2 < SIZEOF_LONG*8
+        if (uintval >> (PyLong_SHIFT * 2)) {
+            unequal = (size != 3) || (digits[0] != (uintval & (unsigned long) PyLong_MASK))
+                 | (digits[1] != ((uintval >> (1 * PyLong_SHIFT)) & (unsigned long) PyLong_MASK)) | (digits[2] != ((uintval >> (2 * PyLong_SHIFT)) & (unsigned long) PyLong_MASK));
+        } else
+#endif
+#if PyLong_SHIFT * 1 < SIZEOF_LONG*8
+        if (uintval >> (PyLong_SHIFT * 1)) {
+            unequal = (size != 2) || (digits[0] != (uintval & (unsigned long) PyLong_MASK))
+                 | (digits[1] != ((uintval >> (1 * PyLong_SHIFT)) & (unsigned long) PyLong_MASK));
+        } else
+#endif
+            unequal = (size != 1) || (((unsigned long) digits[0]) != (uintval & (unsigned long) PyLong_MASK));
+        if (unequal == 0) Py_RETURN_TRUE; else Py_RETURN_FALSE;
+    }
+    #endif
+    if (PyFloat_CheckExact(op1)) {
+        const long b = intval;
+        double a = PyFloat_AS_DOUBLE(op1);
+        if ((double)a == (double)b) Py_RETURN_TRUE; else Py_RETURN_FALSE;
+    }
+    return (
+        PyObject_RichCompare(op1, op2, Py_EQ));
 }
 
 /* GetItemInt */
