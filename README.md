@@ -5,7 +5,33 @@ CTC segmentation can be used to find utterances alignments within large audio fi
 * This repository contains the `ctc-segmentation` python package.
 * A description of the algorithm is in https://arxiv.org/abs/2007.09127
 * The code used in the paper is archived in https://github.com/cornerfarmer/ctc_segmentation
-* If you want to make modifications or improvements to the algorithm, open an issue or you can also send an email/message to me (email address on paper) to discuss improvements or send a pull request.
+
+
+# How it works
+
+## 1. Forward propagation
+
+Character probabilites from each time step are obtained from a CTC-based network.
+With these, transition probabilities are mapped into a trellis diagram.
+To account for preambles or unrelated segments in audio files, the transition cost are set to zero for the start-of-sentence or blank token.
+
+![Forward trellis](doc/1_forward.png)
+
+## 2. Backtracking
+
+Starting from the time step with the highest probability for the last character, backtracking determines the most probable path of characters through all time steps.
+
+![Backward path](doc/2_backtracking.png)
+
+## 3. Confidence score
+
+As this method generates a probability for each aligned character, a confidence score for each utterance can be derived.
+For example, if a word within an utterance is missing, this value is low.
+
+![Confidence score](doc/3_scoring.png)
+
+The confidence score helps to detect and filter-out bad utterances.
+
 
 # Installation
 
