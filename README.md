@@ -7,32 +7,6 @@ CTC segmentation can be used to find utterances alignments within large audio fi
 * The code used in the paper is archived in https://github.com/cornerfarmer/ctc_segmentation
 
 
-# How it works
-
-## 1. Forward propagation
-
-Character probabilites from each time step are obtained from a CTC-based network.
-With these, transition probabilities are mapped into a trellis diagram.
-To account for preambles or unrelated segments in audio files, the transition cost are set to zero for the start-of-sentence or blank token.
-
-![Forward trellis](doc/1_forward.png)
-
-## 2. Backtracking
-
-Starting from the time step with the highest probability for the last character, backtracking determines the most probable path of characters through all time steps.
-
-![Backward path](doc/2_backtracking.png)
-
-## 3. Confidence score
-
-As this method generates a probability for each aligned character, a confidence score for each utterance can be derived.
-For example, if a word within an utterance is missing, this value is low.
-
-![Confidence score](doc/3_scoring.png)
-
-The confidence score helps to detect and filter-out bad utterances.
-
-
 # Installation
 
 * With `pip`:
@@ -51,6 +25,7 @@ python setup.py build
 python setup.py install --optimize=1 --skip-build
 ```
 
+
 # Example Code
 
 1. `prepare_text` filters characters not in the dictionary, and generates the character matrix.
@@ -67,11 +42,10 @@ from ctc_segmentation import CtcSegmentationParameters
 from ctc_segmentation import determine_utterance_segments
 from ctc_segmentation import prepare_text
 
-...
+# ...
 
 config = CtcSegmentationParameters()
 char_list = train_args.char_list
-config.blank = char_list[0]
 
 for idx, name in enumerate(js.keys(), 1):
     logging.info("(%d/%d) Aligning " + name, idx, len(js.keys()))
@@ -124,12 +98,39 @@ There are several notable parameters to adjust the working of the algorithm:
 
 * If `replace_spaces_with_blanks` is True, then spaces in the ground truth sequence are replaces by blanks. This option is enabled by default and improves compability with dictionaries with unknown space characters.
 
-* To align utterances with longer unkown audio sections between them, use `blank_transition_cost_zero` (default: False). With this option, the stay transition in the blank state is free. A transition to the next character is only consumed if the probability to switch is higher. Caution: in combination with `replace_spaces_with_blanks == True`, this may lead to misaligned segments.
+* To align utterances with longer unkown audio sections between them, use `blank_transition_cost_zero` (default: False). With this option, the stay transition in the blank state is free. A transition to the next character is only consumed if the probability to switch is higher. In this way, more time steps can be skipped between utterances. Caution: in combination with `replace_spaces_with_blanks == True`, this may lead to misaligned segments.
 
 Two parameters are needed to correctly map the frame indices to a time stamp in seconds:
 
 * `subsampling_factor`: If the encoder sub-samples its input, the number of frames at the CTC layer is reduced by this factor. A BLSTMP encoder with subsampling 1_2_2_1_1 has a subsampling factor of 4. 
 * `frame_duration`: This is the non-overlapping duration of a single frame in milliseconds (the inverse of frames per millisecond).
+
+
+
+# How it works
+
+### 1. Forward propagation
+
+Character probabilites from each time step are obtained from a CTC-based network.
+With these, transition probabilities are mapped into a trellis diagram.
+To account for preambles or unrelated segments in audio files, the transition cost are set to zero for the start-of-sentence or blank token.
+
+![Forward trellis](doc/1_forward.png)
+
+### 2. Backtracking
+
+Starting from the time step with the highest probability for the last character, backtracking determines the most probable path of characters through all time steps.
+
+![Backward path](doc/2_backtracking.png)
+
+### 3. Confidence score
+
+As this method generates a probability for each aligned character, a confidence score for each utterance can be derived.
+For example, if a word within an utterance is missing, this value is low.
+
+![Confidence score](doc/3_scoring.png)
+
+The confidence score helps to detect and filter-out bad utterances.
 
 
 # Reference

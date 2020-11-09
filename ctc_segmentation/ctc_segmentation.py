@@ -31,8 +31,7 @@ class CtcSegmentationParameters:
     The character set is taken from the model dict, i.e., usually are generated with
     SentencePiece. An ASR model trained in the corresponding language and character
     set is needed. If the character set contains any punctuation characters, "#",
-    or the Greek char "ε", adapt these settings. If the blank token is not set
-    as "_", adjust the setting.
+    the Greek char "ε", or the space placeholder, adapt these settings.
     """
 
     max_prob = -10000000000.0
@@ -43,8 +42,8 @@ class CtcSegmentationParameters:
     frame_duration_ms = 10
     score_min_mean_over_L = 30
     space = "·"
-    blank = "▁"
-    replace_spaces_with_blanks = True
+    blank = 0
+    replace_spaces_with_blanks = False
     blank_transition_cost_zero = False
     self_transition = "ε"
     start_of_ground_truth = "#"
@@ -107,7 +106,7 @@ def ctc_segmentation(config, lpz, ground_truth):
             lpz.astype(np.float32),
             np.array(ground_truth),
             offsets,
-            blank,
+            config.blank,
             config.flags
         )
         logging.debug(
@@ -192,9 +191,12 @@ def prepare_text(config, text, char_list=None):
                         characters not included in this list are ignored
     :return: label matrix, character index matrix
     """
+    # temporary compatibility fix for previous espnet versions
+    if type(config.blank) == str:
+        config.blank = 0
     if char_list is not None:
         config.char_list = char_list
-    logging.debug(f"Blank character: {config.char_list[0]} == {config.blank}")
+    blank = config.char_list[config.blank]
     ground_truth = config.start_of_ground_truth
     utt_begin_indices = []
     for utt in text:
@@ -223,7 +225,7 @@ def prepare_text(config, text, char_list=None):
             if i - s < 0:
                 continue
             span = ground_truth[i - s : i + 1]
-            span = span.replace(config.space, config.blank)
+            span = span.replace(config.space, blank)
             if span in config.char_list:
                 char_index = config.char_list.index(span)
                 ground_truth_mat[i, s] = char_index
