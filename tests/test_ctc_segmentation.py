@@ -22,7 +22,7 @@ def test_ctc_segmentation():
     config = CtcSegmentationParameters()
     config.min_window_size = 20
     config.max_window_size = 50
-    char_list = ["<blank>", "a", "c", "d", "g", "o", "s", "t"]
+    char_list = ["•", "a", "c", "d", "g", "o", "s", "t"]
     text = ["catzz#\n", "dogs!!\n"]
     # lpz = torch.nn.functional.log_softmax(torch.rand(30, 8) * 10, dim=0).numpy()
     ground_truth_mat, utt_begin_indices = prepare_text(config, text, char_list)
@@ -61,7 +61,7 @@ def test_prepare_text():
     """
     config = CtcSegmentationParameters()
     text = ["catzz#\n", "dogs!!\n"]
-    char_list = ["<blank>", "a", "c", "d", "g", "o", "s", "t"]
+    char_list = ["•", "a", "c", "d", "g", "o", "s", "t"]
     ground_truth_mat, utt_begin_indices = prepare_text(config, text, char_list)
     correct_begin_indices = np.array([1, 5, 10])
     assert (utt_begin_indices == correct_begin_indices).all()
