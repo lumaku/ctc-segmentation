@@ -11,6 +11,7 @@ from ctc_segmentation import ctc_segmentation
 from ctc_segmentation import CtcSegmentationParameters
 from ctc_segmentation import determine_utterance_segments
 from ctc_segmentation import prepare_text
+from ctc_segmentation import prepare_tokenized_text
 
 
 def test_ctc_segmentation():
@@ -63,6 +64,22 @@ def test_prepare_text():
     text = ["catzz#\n", "dogs!!\n"]
     char_list = ["•", "a", "c", "d", "g", "o", "s", "t"]
     ground_truth_mat, utt_begin_indices = prepare_text(config, text, char_list)
+    correct_begin_indices = np.array([1, 5, 10])
+    assert (utt_begin_indices == correct_begin_indices).all()
+    gtm = list(ground_truth_mat.shape)
+    assert gtm[0] == 11
+    assert gtm[1] == 1
+
+
+def test_prepare_tokenized_text():
+    """Test the prepare_text function for CTC segmentation.
+
+    Results are checked and compared with test vectors.
+    """
+    config = CtcSegmentationParameters()
+    text = ["c a t", "d ▁o ▁g ▁s"]
+    char_list = ["•", "a", "c", "d", "▁g", "▁o", "▁s", "t"]
+    ground_truth_mat, utt_begin_indices = prepare_tokenized_text(config, text, char_list)
     correct_begin_indices = np.array([1, 5, 10])
     assert (utt_begin_indices == correct_begin_indices).all()
     gtm = list(ground_truth_mat.shape)

@@ -3,6 +3,7 @@
 
 # Copyright 2020, Technische Universität München; Dominik Winkelbauer, Ludwig Kürzinger
 #  Apache 2.0  (http://www.apache.org/licenses/LICENSE-2.0)
+# Contribution: s920128 @ Github for prepare_tokenized_text()
 
 """CTC segmentation.
 
@@ -48,6 +49,7 @@ class CtcSegmentationParameters:
     self_transition = "ε"
     start_of_ground_truth = "#"
     excluded_characters = ".,-?!:»«;'›‹<>()•❍·"
+    tokenized_meta_symbol = "▁"
     char_list = None
 
     @property
@@ -107,7 +109,7 @@ def ctc_segmentation(config, lpz, ground_truth):
             np.array(ground_truth),
             offsets,
             config.blank,
-            config.flags
+            config.flags,
         )
         logging.debug(
             f"Max. joint probability to align text to audio: "
@@ -229,6 +231,54 @@ def prepare_text(config, text, char_list=None):
             if span in config.char_list:
                 char_index = config.char_list.index(span)
                 ground_truth_mat[i, s] = char_index
+    return ground_truth_mat, utt_begin_indices
+
+
+def prepare_tokenized_text(config, text, char_list=None):
+    """Prepare the given tokenized text for CTC segmentation.
+
+    :param config: an instance of CtcSegmentationParameters
+    :param text: string with tokens separated by spaces
+    :param char_list: a set or list that includes all characters/symbols,
+                        characters not included in this list are ignored
+    :return: label matrix, character index matrix
+    """
+    # temporary compatibility fix for previous espnet versions
+    if type(config.blank) == str:
+        config.blank = 0
+    if char_list is not None:
+        config.char_list = char_list
+    blank = config.char_list[config.blank]
+    ground_truth = [config.start_of_ground_truth]
+    utt_begin_indices = []
+    for utt in text:
+        # One space in-between
+        if not ground_truth[-1] == config.space:
+            ground_truth += [config.space]
+        # Start new utterance remember index
+        utt_begin_indices.append(len(ground_truth) - 1)
+        # Add tokens of utterance
+        for token in utt.split():
+            if token in config.char_list:
+                if config.replace_spaces_with_blanks and not token.beginswith(
+                    config.tokenized_meta_symbol
+                ):
+                    ground_truth += [config.space]
+                ground_truth += [token]
+    # Add space to the end
+    if not ground_truth[-1] == config.space:
+        ground_truth += [config.space]
+    logging.debug(f"ground_truth: {ground_truth}")
+    utt_begin_indices.append(len(ground_truth) - 1)
+    # Create matrix: time frame x number of letters the character symbol spans
+    max_char_len = 1
+    ground_truth_mat = np.ones([len(ground_truth), max_char_len], np.int) * -1
+    for i in range(1, len(ground_truth)):
+        if ground_truth[i] == config.space:
+            ground_truth_mat[i, 0] = config.blank
+        else:
+            char_index = config.char_list.index(ground_truth[i])
+            ground_truth_mat[i, 0] = char_index
     return ground_truth_mat, utt_begin_indices
 
 
