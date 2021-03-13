@@ -103,8 +103,12 @@ There are several notable parameters to adjust the working of the algorithm:
 Two parameters are needed to correctly map the frame indices to a time stamp in seconds:
 
 * `subsampling_factor`: If the encoder sub-samples its input, the number of frames at the CTC layer is reduced by this factor. A BLSTMP encoder with subsampling 1_2_2_1_1 has a subsampling factor of 4. 
-* `frame_duration`: This is the non-overlapping duration of a single frame in milliseconds (the inverse of frames per millisecond).
+* `frame_duration_ms`: This is the non-overlapping duration of a single frame in milliseconds (the inverse of frames per millisecond). Note: if `fs` is set, then `frame_duration_ms` is ignored.
 
+But not all ASR systems have subsampling. If you want to directly use the sampling rate:
+
+1. For a given sample rate, say, 16kHz, set `fs=16000`.
+2. Then set the `subsampling_factor` to the number of sample points on a single CTC-encoded frame. In default ASR systems, this can be calculated from the hop length of the windowing times encoder subsampling factor. For example, if the hop length is 128, and the subsampling factor in the encoder is 4, then set `subsampling_factor=512`.
 
 
 # How it works

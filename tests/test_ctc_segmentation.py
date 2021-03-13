@@ -14,6 +14,15 @@ from ctc_segmentation import prepare_text
 from ctc_segmentation import prepare_tokenized_text
 
 
+def test_ctcsegmentationparameters():
+    # test repr and init
+    config = CtcSegmentationParameters(fs=16000)
+    config = eval(str(config))
+    assert config.fs == 16000
+    config.subsampling_factor = 512
+    assert config.index_duration_in_seconds == 0.032
+
+
 def test_ctc_segmentation():
     """Test CTC segmentation.
 

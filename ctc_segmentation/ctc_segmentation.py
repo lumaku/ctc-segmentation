@@ -1,14 +1,16 @@
 #!/usr/bin/env python3
 # encoding: utf-8
 
-# Copyright 2020, Technische Universität München; Dominik Winkelbauer, Ludwig Kürzinger
+# Copyright 2020, Technische Universität München;
+#                 Dominik Winkelbauer, Ludwig Kürzinger
 #  Apache 2.0  (http://www.apache.org/licenses/LICENSE-2.0)
 # Contribution: s920128 @ Github for prepare_tokenized_text()
 
 """CTC segmentation.
 
 This file contains the core functions of CTC segmentation.
-to extract utterance alignments within an audio file with a given transcription.
+to extract utterance alignments within an audio file with
+a given transcription.
 For a description, see https://arxiv.org/abs/2007.09127
 """
 
@@ -29,10 +31,11 @@ class CtcSegmentationParameters:
     """Default values for CTC segmentation.
 
     May need adjustment according to localization or ASR settings.
-    The character set is taken from the model dict, i.e., usually are generated with
-    SentencePiece. An ASR model trained in the corresponding language and character
-    set is needed. If the character set contains any punctuation characters, "#",
-    the Greek char "ε", or the space placeholder, adapt these settings.
+    The character set is taken from the model dict, i.e., usually are generated
+    with SentencePiece. An ASR model trained in the corresponding language and
+    character set is needed. If the character set contains any punctuation
+    characters, "#", the Greek char "ε", or the space placeholder, adapt
+    these settings.
     """
 
     max_prob = -10000000000.0
@@ -41,6 +44,7 @@ class CtcSegmentationParameters:
     max_window_size = 100000
     subsampling_factor = 1
     frame_duration_ms = 10
+    fs = None
     score_min_mean_over_L = 30
     space = "·"
     blank = 0
@@ -54,8 +58,13 @@ class CtcSegmentationParameters:
 
     @property
     def index_duration_in_seconds(self):
-        """Automatically derive index duration from frame duration and subsampling."""
-        return self.frame_duration_ms * self.subsampling_factor / 1000
+        """Derive index duration from frame duration and subsampling."""
+        t = self.subsampling_factor
+        if self.fs is not None:
+            t = t / self.fs
+        else:
+            t = self.frame_duration_ms * t / 1000
+        return t
 
     @property
     def flags(self):
@@ -64,7 +73,7 @@ class CtcSegmentationParameters:
         return flags
 
     def update_exluded_characters(self):
-        """Chars in char list are removed from the list of excluded characters."""
+        """Remove known tokens from the list of excluded characters."""
         self.excluded_characters = "".join(
             [
                 char
@@ -73,6 +82,23 @@ class CtcSegmentationParameters:
             ]
         )
         logging.debug(f"Excluded characters: {self.excluded_characters}")
+
+    def __init__(self, **kwargs):
+        for key in kwargs:
+            if (
+                not key.startswith("_")
+                and hasattr(self, key)
+                and kwargs[key] is not None
+            ):
+                setattr(self, key, kwargs[key])
+
+    def __repr__(self):
+        output = "CtcSegmentationParameters( "
+        for attribute in self.__dict__.keys():
+            value = self.__dict__[attribute]
+            output += f"{attribute}={value}, "
+        output += ")"
+        return output
 
 
 def ctc_segmentation(config, lpz, ground_truth):
@@ -248,7 +274,6 @@ def prepare_tokenized_text(config, text, char_list=None):
         config.blank = 0
     if char_list is not None:
         config.char_list = char_list
-    blank = config.char_list[config.blank]
     ground_truth = [config.start_of_ground_truth]
     utt_begin_indices = []
     for utt in text:
