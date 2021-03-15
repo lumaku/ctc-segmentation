@@ -38,9 +38,9 @@ https://github.com/lumaku/ctc-segmentation
 
 setup(
     name="ctc_segmentation",
-    version="1.5.1",
+    version="1.5.2",
 
-    python_requires='>=3.7',
+    python_requires='>=3.6',
     packages=find_packages(exclude=["tests"]),
     setup_requires=["numpy"],
     install_requires=["setuptools", "numpy", "Cython"],
