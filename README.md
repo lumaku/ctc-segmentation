@@ -7,6 +7,16 @@ CTC segmentation can be used to find utterances alignments within large audio fi
 * The code used in the paper is archived in https://github.com/cornerfarmer/ctc_segmentation
 
 
+# Usage
+
+The CTC segmentation package is not standalone, as it needs a neural network with CTC output. It is integrated in these frameworks:
+
+* In ESPnet 1 as corpus recipe: [Alignment script](https://github.com/espnet/espnet/blob/master/espnet/bin/asr_align.py), [Example recipe](https://github.com/espnet/espnet/tree/master/egs/tedlium2/align1), [Demo](https://github.com/espnet/espnet#ctc-segmentation-demo )
+* In ESPnet 2, as script or directly as python interface: [Alignment script](https://github.com/lumaku/espnet/blob/espnet2_ctc_segmentation/espnet2/bin/asr_align.py), [Demo](https://github.com/lumaku/espnet/tree/espnet2_ctc_segmentation#ctc-segmentation-demo )
+* In Nvidia NeMo as dataset creation tool: [Documentation](https://docs.nvidia.com/deeplearning/nemo/user-guide/docs/en/main/tools/ctc_segmentation.html), [Example](https://github.com/NVIDIA/NeMo/blob/main/tutorials/tools/CTC_Segmentation_Tutorial.ipynb) 
+
+
+
 # Installation
 
 * With `pip`:
@@ -26,59 +36,32 @@ python setup.py install --optimize=1 --skip-build
 ```
 
 
-# Example Code
+# Toolkit Integration
+
+CTC segmentation requires CTC activations of an already trained CTC-based network. Example code can be found in the alignment scripts `asr_align.py` of ESPnet 1 or ESpnet 2.
+
+### Steps to alignment for regular ASR
 
 1. `prepare_text` filters characters not in the dictionary, and generates the character matrix.
-2. `ctc_segmentation` computes character-wise alignments from CTC activations of an already trained CTC-based network.
+2. `ctc_segmentation` computes character-wise alignments from the CTC log posterior probabilites.
 3. `determine_utterance_segments` converts char-wise alignments to utterance-wise alignments.
 4. In a post-processing step, segments may be filtered by their confidence value.
 
-This code is from `asr_align.py` of the ESPnet toolkit:
+
+### Steps to alignment for different use-cases
+
+Sometimes the ground truth data is not text, but a sequence of tokens, or a list of protein segments.
+
+In this case, replace the function `prepare_text` with a function that suits better for your data. For this, produce a numpy matrix, e.g. a shape `[L,1]` with L as total ground truth length including separator symbols (`ground_truth_mat`) and also, a list that gives the starting indices of the separate segments (`utt_begin_indices`).
+
+Examples: See `prepare_tokenized_text` in `ctc_segmentation.py`, or the example included in the NeMo toolkit.
 
 
-```python
-from ctc_segmentation import ctc_segmentation
-from ctc_segmentation import CtcSegmentationParameters
-from ctc_segmentation import determine_utterance_segments
-from ctc_segmentation import prepare_text
+### Segments clean-up
 
-# ...
+Segments that were written to a `segments` file can be filtered using the confidence score. This is the minium confidence score in log space as described in the paper. 
 
-config = CtcSegmentationParameters()
-char_list = train_args.char_list
-
-for idx, name in enumerate(js.keys(), 1):
-    logging.info("(%d/%d) Aligning " + name, idx, len(js.keys()))
-    batch = [(name, js[name])]
-    feat, label = load_inputs_and_targets(batch)
-    feat = feat[0]
-    with torch.no_grad():
-        # Encode input frames
-        enc_output = model.encode(torch.as_tensor(feat).to(device)).unsqueeze(0)
-        # Apply ctc layer to obtain log character probabilities
-        lpz = model.ctc.log_softmax(enc_output)[0].cpu().numpy()
-    # Prepare the text for aligning
-    ground_truth_mat, utt_begin_indices = prepare_text(
-        config, text[name], char_list
-    )
-    # Align using CTC segmentation
-    timings, char_probs, state_list = ctc_segmentation(
-        config, lpz, ground_truth_mat
-    )
-    # Obtain list of utterances with time intervals and confidence score
-    segments = determine_utterance_segments(
-        config, utt_begin_indices, char_probs, timings, text[name]
-    )
-    # Write to "segments" file
-    for i, boundary in enumerate(segments):
-        utt_segment = (
-            f"{segment_names[name][i]} {name} {boundary[0]:.2f}"
-            f" {boundary[1]:.2f} {boundary[2]:.9f}\n"
-        )
-        args.output.write(utt_segment)
-```
-
-After the segments are written to a `segments` file, they can be filtered with the parameter `min_confidence_score`. This is minium confidence score in log space as described in the paper. Utterances with a low confidence score are discarded. This parameter may need adjustment depending on dataset, ASR model and language. For the german ASR model, a value of -1.5 worked very well, but for TEDlium, a lower value of about -5.0 seemed more practical.
+Utterances with a low confidence score are discarded in a data clean-up. This parameter may need adjustment depending on dataset, ASR model and language. For the German ASR model, a value of -1.5 worked very well; for TEDlium, a lower value of about -5.0 seemed more practical.
 
 ```bash
 awk -v ms=${min_confidence_score} '{ if ($5 > ms) {print} }' ${unfiltered} > ${filtered}
@@ -87,7 +70,7 @@ awk -v ms=${min_confidence_score} '{ if ($5 > ms) {print} }' ${unfiltered} > ${f
 
 # Parameters
 
-There are several notable parameters to adjust the working of the algorithm:
+There are several notable parameters to adjust the working of the algorithm that can be found in the class `CtcSegmentationParameters`:
 
 
 * `min_window_size`: Minimum window size considered for a single utterance. The current default value should be OK in most cases.
