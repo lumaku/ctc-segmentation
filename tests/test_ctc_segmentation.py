@@ -16,11 +16,11 @@ from ctc_segmentation import prepare_tokenized_text
 
 def test_ctcsegmentationparameters():
     # test repr and init
-    config = CtcSegmentationParameters(fs=16000)
+    config = CtcSegmentationParameters()
     config = eval(str(config))
-    assert config.fs == 16000
-    config.subsampling_factor = 512
-    assert config.index_duration_in_seconds == 0.032
+    assert config.index_duration_in_seconds == 0.025
+    config.index_duration = 0.025
+    assert config.index_duration_in_seconds == 0.025
 
 
 def test_ctc_segmentation():
@@ -46,7 +46,8 @@ def test_determine_utterance_segments():
     Results are checked and compared with test vectors.
     """
     config = CtcSegmentationParameters()
-    config.frame_duration_ms = 1000
+    frame_duration_ms = 1000
+    config.index_duration = frame_duration_ms / 1000.0
     config.score_min_mean_over_L = 2
     utt_begin_indices = [1, 4, 9]
     text = ["catzz#\n", "dogs!!\n"]
@@ -56,9 +57,6 @@ def test_determine_utterance_segments():
         config, utt_begin_indices, char_probs, timings, text
     )
     correct_segments = [(2.0, 4.0, -0.5), (5.0, 9.0, -0.5)]
-    for i, boundary in enumerate(segments):
-        utt_segment = f"{i} {boundary[0]:.2f} {boundary[1]:.2f} {boundary[2]:.2f}"
-        print(utt_segment)
     for i in [0, 1]:
         for j in [0, 1, 2]:
             assert segments[i][j] == correct_segments[i][j]

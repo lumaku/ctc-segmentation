@@ -42,9 +42,7 @@ class CtcSegmentationParameters:
     skip_prob = -10000000000.0
     min_window_size = 8000
     max_window_size = 100000
-    subsampling_factor = 1
-    frame_duration_ms = 10
-    fs = None
+    index_duration = 0.025
     score_min_mean_over_L = 30
     space = "·"
     blank = 0
@@ -55,15 +53,24 @@ class CtcSegmentationParameters:
     excluded_characters = ".,-?!:»«;'›‹<>()•❍·"
     tokenized_meta_symbol = "▁"
     char_list = None
+    # legacy Parameters (wil be ignored in future versions)
+    subsampling_factor = None
+    frame_duration_ms = None
 
     @property
     def index_duration_in_seconds(self):
-        """Derive index duration from frame duration and subsampling."""
-        t = self.subsampling_factor
-        if self.fs is not None:
-            t = t / self.fs
+        """Derive index duration from frame duration and subsampling.
+
+        This value can be fixed by setting ctc_index_duration, which causes
+        frame_duration_ms and subsampling_factor to be ignored.
+
+        Legacy function. This function will be removed in later versions
+        and replaced by index_duration.
+        """
+        if self.subsampling_factor and self.frame_duration_ms:
+            t = self.frame_duration_ms * self.subsampling_factor / 1000
         else:
-            t = self.frame_duration_ms * t / 1000
+            t = self.index_duration
         return t
 
     @property
@@ -84,6 +91,15 @@ class CtcSegmentationParameters:
         logging.debug(f"Excluded characters: {self.excluded_characters}")
 
     def __init__(self, **kwargs):
+        self.set(**kwargs)
+
+    def set(self, **kwargs):
+        """Update CtcSegmentationParameters.
+
+        Args:
+            **kwargs: Key-value dict that contains all properties
+                with their new values. Unknown properties are ignored.
+        """
         for key in kwargs:
             if (
                 not key.startswith("_")

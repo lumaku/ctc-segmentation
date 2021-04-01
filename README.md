@@ -73,7 +73,7 @@ awk -v ms=${min_confidence_score} '{ if ($5 > ms) {print} }' ${unfiltered} > ${f
 There are several notable parameters to adjust the working of the algorithm that can be found in the class `CtcSegmentationParameters`:
 
 
-* `min_window_size`: Minimum window size considered for a single utterance. The current default value should be OK in most cases.
+### Data preparation parameters
 
 * Localization: The character set is taken from the model dict, i.e., usually are generated with SentencePiece. An ASR model trained in the corresponding language and character set is needed. For asian languages, no changes to the CTC segmentation parameters should be necessary. One exception: If the character set contains any punctuation characters, "#", or the Greek char "ε", adapt the setting in an instance of `CtcSegmentationParameters` in `segmentation.py`.
 
@@ -81,17 +81,19 @@ There are several notable parameters to adjust the working of the algorithm that
 
 * If `replace_spaces_with_blanks` is True, then spaces in the ground truth sequence are replaces by blanks. This option is enabled by default and improves compability with dictionaries with unknown space characters.
 
+### Alignment parameters
+
+* `min_window_size`: Minimum window size considered for a single utterance. The current default value should be OK in most cases.
+
 * To align utterances with longer unkown audio sections between them, use `blank_transition_cost_zero` (default: False). With this option, the stay transition in the blank state is free. A transition to the next character is only consumed if the probability to switch is higher. In this way, more time steps can be skipped between utterances. Caution: in combination with `replace_spaces_with_blanks == True`, this may lead to misaligned segments.
 
-Two parameters are needed to correctly map the frame indices to a time stamp in seconds:
+### Time stamp parameters
 
-* `subsampling_factor`: If the encoder sub-samples its input, the number of frames at the CTC layer is reduced by this factor. A BLSTMP encoder with subsampling 1_2_2_1_1 has a subsampling factor of 4. 
-* `frame_duration_ms`: This is the non-overlapping duration of a single frame in milliseconds (the inverse of frames per millisecond). Note: if `fs` is set, then `frame_duration_ms` is ignored.
+Directly set the parameter `index_duration` to give the corresponding time duration of one CTC output index (in seconds).
 
-But not all ASR systems have subsampling. If you want to directly use the sampling rate:
+**Example:** For a given sample rate, say, 16kHz, `fs=16000`. Then, how many sample points correspond to one ctc output index? In some ASR systems, this can be calculated from the hop length of the windowing times encoder subsampling factor. For example, if the hop length of the frontend windowing is 128, and the subsampling factor in the encoder is 4, totalling 512 sample points for one CTC index. Then `index_duration = 512 / 16000`.
 
-1. For a given sample rate, say, 16kHz, set `fs=16000`.
-2. Then set the `subsampling_factor` to the number of sample points on a single CTC-encoded frame. In default ASR systems, this can be calculated from the hop length of the windowing times encoder subsampling factor. For example, if the hop length is 128, and the subsampling factor in the encoder is 4, then set `subsampling_factor=512`.
+**Note:** In earlier versions, `index_duration` was not used and the time stamps were determined from the values of `subsampling_factor` and `frame_duration_ms`. To derive `index_duration` from these values, calculate`frame_duration_ms * subsampling_factor / 1000`.
 
 
 # How it works
