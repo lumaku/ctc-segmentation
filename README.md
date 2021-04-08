@@ -1,5 +1,10 @@
 # CTC segmentation
 
+<!-- Badges -->
+[![version](https://img.shields.io/pypi/v/ctc-segmentation?style=plastic)](https://pypi.org/project/ctc-segmentation/)
+[![downloads](https://img.shields.io/pypi/dm/ctc-segmentation?style=plastic)](https://pypi.org/project/ctc-segmentation/)
+[![build status](https://github.com/lumaku/ctc-segmentation/actions/workflows/python-package.yml/badge.svg)](https://github.com/lumaku/ctc-segmentation/actions/workflows/python-package.yml)
+
 CTC segmentation can be used to find utterances alignments within large audio files.
 
 * This repository contains the `ctc-segmentation` python package.
