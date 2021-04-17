@@ -19,8 +19,8 @@ cimport numpy as np
 
 def cython_fill_table(np.ndarray[np.float32_t, ndim=2] table,
                       np.ndarray[np.float32_t, ndim=2] lpz,
-                      np.ndarray[np.int_t, ndim=2] ground_truth,
-                      np.ndarray[np.int_t, ndim=1] offsets,
+                      np.ndarray[np.int64_t, ndim=2] ground_truth,
+                      np.ndarray[np.int64_t, ndim=1] offsets,
                       int blank,
                       int flags):
     """Fill the table of transition probabilities.
@@ -44,7 +44,7 @@ def cython_fill_table(np.ndarray[np.float32_t, ndim=2] table,
     cdef float prob_max = -1000000000
     cdef float last_max
     cdef int last_arg_max
-    cdef np.ndarray[np.int_t, ndim=1] cur_offset = np.zeros([ground_truth.shape[1]], np.int) - 1
+    cdef np.ndarray[np.int64_t, ndim=1] cur_offset = np.zeros([ground_truth.shape[1]], np.int64) - 1
     cdef float max_lpz_prob
     cdef float p
     cdef int s

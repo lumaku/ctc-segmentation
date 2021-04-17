@@ -11,7 +11,10 @@
 This file contains the core functions of CTC segmentation.
 to extract utterance alignments within an audio file with
 a given transcription.
-For a description, see https://arxiv.org/abs/2007.09127
+For a description, see:
+"CTC-Segmentation of Large Corpora for German End-to-end Speech Recognition"
+https://arxiv.org/abs/2007.09127 or
+https://link.springer.com/chapter/10.1007%2F978-3-030-60276-5_27
 """
 
 import logging
@@ -126,6 +129,7 @@ def ctc_segmentation(config, lpz, ground_truth):
     :return:
     """
     blank = 0
+    offset = 0
     audio_duration = lpz.shape[0] * config.index_duration_in_seconds
     logging.info(
         f"CTC segmentation of {len(ground_truth)} chars "
@@ -143,13 +147,13 @@ def ctc_segmentation(config, lpz, ground_truth):
         )
         table.fill(config.max_prob)
         # Use array to log window offsets per character
-        offsets = np.zeros([len(ground_truth)], dtype=np.int)
+        offsets = np.zeros([len(ground_truth)], dtype=np.int64)
         # Run actual alignment of utterances
         t, c = cython_fill_table(
             table,
             lpz.astype(np.float32),
-            np.array(ground_truth),
-            offsets,
+            np.array(ground_truth, dtype=np.int64),
+            np.array(offsets, dtype=np.int64),
             config.blank,
             config.flags,
         )
@@ -263,7 +267,7 @@ def prepare_text(config, text, char_list=None):
     utt_begin_indices.append(len(ground_truth) - 1)
     # Create matrix: time frame x number of letters the character symbol spans
     max_char_len = max([len(c) for c in config.char_list])
-    ground_truth_mat = np.ones([len(ground_truth), max_char_len], np.int) * -1
+    ground_truth_mat = np.ones([len(ground_truth), max_char_len], np.int64) * -1
     for i in range(len(ground_truth)):
         for s in range(max_char_len):
             if i - s < 0:
@@ -276,20 +280,13 @@ def prepare_text(config, text, char_list=None):
     return ground_truth_mat, utt_begin_indices
 
 
-def prepare_tokenized_text(config, text, char_list=None):
+def prepare_tokenized_text(config, text):
     """Prepare the given tokenized text for CTC segmentation.
 
     :param config: an instance of CtcSegmentationParameters
     :param text: string with tokens separated by spaces
-    :param char_list: a set or list that includes all characters/symbols,
-                        characters not included in this list are ignored
     :return: label matrix, character index matrix
     """
-    # temporary compatibility fix for previous espnet versions
-    if type(config.blank) == str:
-        config.blank = 0
-    if char_list is not None:
-        config.char_list = char_list
     ground_truth = [config.start_of_ground_truth]
     utt_begin_indices = []
     for utt in text:
@@ -313,13 +310,45 @@ def prepare_tokenized_text(config, text, char_list=None):
     utt_begin_indices.append(len(ground_truth) - 1)
     # Create matrix: time frame x number of letters the character symbol spans
     max_char_len = 1
-    ground_truth_mat = np.ones([len(ground_truth), max_char_len], np.int) * -1
+    ground_truth_mat = np.ones([len(ground_truth), max_char_len], np.int64) * -1
     for i in range(1, len(ground_truth)):
         if ground_truth[i] == config.space:
             ground_truth_mat[i, 0] = config.blank
         else:
             char_index = config.char_list.index(ground_truth[i])
             ground_truth_mat[i, 0] = char_index
+    return ground_truth_mat, utt_begin_indices
+
+
+def prepare_token_list(config, text):
+    """Prepare the given token list for CTC segmentation.
+
+    This function expects the text input in form of a list
+    of numpy arrays: [np.array([2, 5]), np.array([7, 9])]
+
+    :param config: an instance of CtcSegmentationParameters
+    :param text: list of numpy arrays with tokens
+    :return: label matrix, character index matrix
+    """
+    ground_truth = [-1]
+    utt_begin_indices = []
+    for utt in text:
+        # It's not possible to detect spaces when sequence is
+        # already tokenized, so we skip replace_spaces_with_blanks
+        # Insert blanks between utterances
+        if not ground_truth[-1] == config.blank:
+            ground_truth += [config.blank]
+        # Start-of-new-utterance remember index
+        utt_begin_indices.append(len(ground_truth) - 1)
+        # Append tokens to list
+        ground_truth += utt.tolist()
+    # Add a blank to the end
+    if not ground_truth[-1] == config.blank:
+        ground_truth += [config.blank]
+    logging.debug(f"ground_truth: {ground_truth}")
+    utt_begin_indices.append(len(ground_truth) - 1)
+    # Create matrix: time frame x number of letters the character symbol spans
+    ground_truth_mat = np.array(ground_truth, dtype=np.int64).reshape(-1, 1)
     return ground_truth_mat, utt_begin_indices
 
 

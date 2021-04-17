@@ -1,15 +1,14 @@
 # CTC segmentation
 
 <!-- Badges -->
+[![build status](https://github.com/lumaku/ctc-segmentation/actions/workflows/python-package.yml/badge.svg)](https://github.com/lumaku/ctc-segmentation/actions/workflows/python-package.yml)
 [![version](https://img.shields.io/pypi/v/ctc-segmentation?style=plastic)](https://pypi.org/project/ctc-segmentation/)
 [![downloads](https://img.shields.io/pypi/dm/ctc-segmentation?style=plastic)](https://pypi.org/project/ctc-segmentation/)
-[![build status](https://github.com/lumaku/ctc-segmentation/actions/workflows/python-package.yml/badge.svg)](https://github.com/lumaku/ctc-segmentation/actions/workflows/python-package.yml)
 
-CTC segmentation can be used to find utterances alignments within large audio files.
+CTC segmentation can be used to find utterance alignments within large audio files.
 
 * This repository contains the `ctc-segmentation` python package.
-* A description of the algorithm is in https://arxiv.org/abs/2007.09127
-* The code used in the paper is archived in https://github.com/cornerfarmer/ctc_segmentation
+* A description of the algorithm is in the CTC segmentation paper (on [Springer Link](https://link.springer.com/chapter/10.1007%2F978-3-030-60276-5_27), on [ArXiv](https://arxiv.org/abs/2007.09127))
 
 
 # Usage
@@ -19,7 +18,6 @@ The CTC segmentation package is not standalone, as it needs a neural network wit
 * In ESPnet 1 as corpus recipe: [Alignment script](https://github.com/espnet/espnet/blob/master/espnet/bin/asr_align.py), [Example recipe](https://github.com/espnet/espnet/tree/master/egs/tedlium2/align1), [Demo](https://github.com/espnet/espnet#ctc-segmentation-demo )
 * In ESPnet 2, as script or directly as python interface: [Alignment script](https://github.com/lumaku/espnet/blob/espnet2_ctc_segmentation/espnet2/bin/asr_align.py), [Demo](https://github.com/lumaku/espnet/tree/espnet2_ctc_segmentation#ctc-segmentation-demo )
 * In Nvidia NeMo as dataset creation tool: [Documentation](https://docs.nvidia.com/deeplearning/nemo/user-guide/docs/en/main/tools/ctc_segmentation.html), [Example](https://github.com/NVIDIA/NeMo/blob/main/tutorials/tools/CTC_Segmentation_Tutorial.ipynb) 
-
 
 
 # Installation
@@ -40,37 +38,30 @@ python setup.py build
 python setup.py install --optimize=1 --skip-build
 ```
 
+# How it works
 
-# Toolkit Integration
+### 1. Forward propagation
 
-CTC segmentation requires CTC activations of an already trained CTC-based network. Example code can be found in the alignment scripts `asr_align.py` of ESPnet 1 or ESpnet 2.
+Character probabilites from each time step are obtained from a CTC-based network.
+With these, transition probabilities are mapped into a trellis diagram.
+To account for preambles or unrelated segments in audio files, the transition cost are set to zero for the start-of-sentence or blank token.
 
-### Steps to alignment for regular ASR
+![Forward trellis](doc/1_forward.png)
 
-1. `prepare_text` filters characters not in the dictionary, and generates the character matrix.
-2. `ctc_segmentation` computes character-wise alignments from the CTC log posterior probabilites.
-3. `determine_utterance_segments` converts char-wise alignments to utterance-wise alignments.
-4. In a post-processing step, segments may be filtered by their confidence value.
+### 2. Backtracking
 
+Starting from the time step with the highest probability for the last character, backtracking determines the most probable path of characters through all time steps.
 
-### Steps to alignment for different use-cases
+![Backward path](doc/2_backtracking.png)
 
-Sometimes the ground truth data is not text, but a sequence of tokens, or a list of protein segments.
+### 3. Confidence score
 
-In this case, replace the function `prepare_text` with a function that suits better for your data. For this, produce a numpy matrix, e.g. a shape `[L,1]` with L as total ground truth length including separator symbols (`ground_truth_mat`) and also, a list that gives the starting indices of the separate segments (`utt_begin_indices`).
+As this method generates a probability for each aligned character, a confidence score for each utterance can be derived.
+For example, if a word within an utterance is missing, this value is low.
 
-Examples: See `prepare_tokenized_text` in `ctc_segmentation.py`, or the example included in the NeMo toolkit.
+![Confidence score](doc/3_scoring.png)
 
-
-### Segments clean-up
-
-Segments that were written to a `segments` file can be filtered using the confidence score. This is the minium confidence score in log space as described in the paper. 
-
-Utterances with a low confidence score are discarded in a data clean-up. This parameter may need adjustment depending on dataset, ASR model and language. For the German ASR model, a value of -1.5 worked very well; for TEDlium, a lower value of about -5.0 seemed more practical.
-
-```bash
-awk -v ms=${min_confidence_score} '{ if ($5 > ms) {print} }' ${unfiltered} > ${filtered}
-```
+The confidence score helps to detect and filter-out bad utterances.
 
 
 # Parameters
@@ -100,36 +91,56 @@ Directly set the parameter `index_duration` to give the corresponding time durat
 
 **Note:** In earlier versions, `index_duration` was not used and the time stamps were determined from the values of `subsampling_factor` and `frame_duration_ms`. To derive `index_duration` from these values, calculate`frame_duration_ms * subsampling_factor / 1000`.
 
+### Confidence score parameters
 
-# How it works
+Character probabilities over each L frames are accumulated to calculate the confidence score. The L value can be adapted with with `score_min_mean_over_L` . A lower L makes the score more sensitive to error in the transcription, but also errors in the ASR model.
 
-### 1. Forward propagation
 
-Character probabilites from each time step are obtained from a CTC-based network.
-With these, transition probabilities are mapped into a trellis diagram.
-To account for preambles or unrelated segments in audio files, the transition cost are set to zero for the start-of-sentence or blank token.
+# Toolkit Integration
 
-![Forward trellis](doc/1_forward.png)
+CTC segmentation requires CTC activations of an already trained CTC-based network. Example code can be found in the alignment scripts `asr_align.py` of ESPnet 1 or ESpnet 2.
 
-### 2. Backtracking
+### Steps to alignment for regular ASR
 
-Starting from the time step with the highest probability for the last character, backtracking determines the most probable path of characters through all time steps.
+1. `prepare_text` filters characters not in the dictionary, and generates the character matrix. Alternatively, use `prepare_token_list` if your text is already coverted to a squence of tokens.
+2. `ctc_segmentation` computes character-wise alignments from the CTC log posterior probabilites.
+3. `determine_utterance_segments` converts char-wise alignments to utterance-wise alignments.
+4. In a post-processing step, segments may be filtered by their confidence value.
 
-![Backward path](doc/2_backtracking.png)
+### Steps to alignment for different use-cases
 
-### 3. Confidence score
+Sometimes the ground truth data is not text, but a sequence of tokens, or a list of protein segments.
+In this case, use either `prepare_token_list` or replace it with a function that suits better for your data.
+For examples, see the `prepare_*` functions in `ctc_segmentation.py`, or the example included in the NeMo toolkit.
 
-As this method generates a probability for each aligned character, a confidence score for each utterance can be derived.
-For example, if a word within an utterance is missing, this value is low.
+### Segments clean-up
 
-![Confidence score](doc/3_scoring.png)
+Segments that were written to a `segments` file can be filtered using the confidence score. This is the minium confidence score in log space as described in the paper. 
 
-The confidence score helps to detect and filter-out bad utterances.
+Utterances with a low confidence score are discarded in a data clean-up. This parameter may need adjustment depending on dataset, ASR model and language. For the German ASR model, a value of -1.5 worked very well; for TEDlium, a lower value of about -5.0 seemed more practical.
 
+```bash
+awk -v ms=${min_confidence_score} '{ if ($5 > ms) {print} }' ${unfiltered} > ${filtered}
+```
+
+
+# FAQ
+
+* *How do I split a large text into multiple utterances?* This can be done automatically, e.g. in our paper, the text of this book/chapter was split into utterances at sentence endings to derive utterances.
+
+* *What if there are unrelated parts within the audio file without transcription?* Unrelated segments can be skipped with the `gratis_blank` parameter. Larger unrelated segments may deteriorate the results, try to increase the minimum window size. Partially repeating segments have a high chance to disarrange the alignments, remove them if possible. These segments can be detected with the confidence score. Use the `state_list` to see how well the unrelated part was "ignored".
+
+* *The inference of the model is too slow and uses too much memory.* Use RNN-based ASR networks that grow linearly in complexity with longer audio files. Inference complexity increases on long audio files quadratically for Transformer-based architectures.
+
+* *The CTC alignment takes too long.* The alignment algorithm is not parallelizable for batch processing, so use a CPU with a good single-thread performance. It's possible to align multiple files in parallel, if the computer has enough RAM. The alignment is faster with shorter max token length, if text is aligned - Or directly align from a token list.
+
+* *How do I get word-based alignments instead of full utterance?* Use an ASR model with character tokens to improve the time-resolution. Then handle each word as single utterance.
+
+* *The alignments are inaccurate.* Be aware that depending on the network, CTC activations are not always accurate, sometimes shifted by up to 10 frames (~200ms). To get a better time resolution, use a dictionary with characters! Also, the `prepare_text` function tries to break down long tokens into smaller tokens.
 
 # Reference
 
-The full paper can be found in the preprint https://arxiv.org/abs/2007.09127 or published at https://doi.org/10.1007/978-3-030-60276-5_27. To cite this work:
+The full paper can be found in the preprint https://arxiv.org/abs/2007.09127 or published at <https://doi.org/10.1007/978-3-030-60276-5_27>. The code used in the paper is archived in <https://github.com/cornerfarmer/ctc_segmentation>. To cite this work:
 
 ```
 @InProceedings{ctcsegmentation,
