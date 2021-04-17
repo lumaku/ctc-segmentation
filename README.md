@@ -17,7 +17,7 @@ The CTC segmentation package is not standalone, as it needs a neural network wit
 
 * In ESPnet 1 as corpus recipe: [Alignment script](https://github.com/espnet/espnet/blob/master/espnet/bin/asr_align.py), [Example recipe](https://github.com/espnet/espnet/tree/master/egs/tedlium2/align1), [Demo](https://github.com/espnet/espnet#ctc-segmentation-demo )
 * In ESPnet 2, as script or directly as python interface: [Alignment script](https://github.com/lumaku/espnet/blob/espnet2_ctc_segmentation/espnet2/bin/asr_align.py), [Demo](https://github.com/lumaku/espnet/tree/espnet2_ctc_segmentation#ctc-segmentation-demo )
-* In Nvidia NeMo as dataset creation tool: [Documentation](https://docs.nvidia.com/deeplearning/nemo/user-guide/docs/en/main/tools/ctc_segmentation.html), [Example](https://github.com/NVIDIA/NeMo/blob/main/tutorials/tools/CTC_Segmentation_Tutorial.ipynb) 
+* In Nvidia NeMo as dataset creation tool: [Documentation](https://docs.nvidia.com/deeplearning/nemo/user-guide/docs/en/main/tools/ctc_segmentation.html), [Example](https://github.com/NVIDIA/NeMo/blob/main/tutorials/tools/CTC_Segmentation_Tutorial.ipynb)
 
 
 # Installation
@@ -132,11 +132,11 @@ awk -v ms=${min_confidence_score} '{ if ($5 > ms) {print} }' ${unfiltered} > ${f
 
 * *The inference of the model is too slow and uses too much memory.* Use RNN-based ASR networks that grow linearly in complexity with longer audio files. Inference complexity increases on long audio files quadratically for Transformer-based architectures.
 
-* *The CTC alignment takes too long.* The alignment algorithm is not parallelizable for batch processing, so use a CPU with a good single-thread performance. It's possible to align multiple files in parallel, if the computer has enough RAM. The alignment is faster with shorter max token length, if text is aligned - Or directly align from a token list.
+* *How can I improve the alignment speed of CTC segmentation?* The alignment algorithm is not parallelizable for batch processing, so use a CPU with a good single-thread performance. It's possible to align multiple files in parallel, if the computer has enough temporary memory. The alignment is faster with shorter max token length, if text is aligned - or directly align from a token list.
 
-* *How do I get word-based alignments instead of full utterance?* Use an ASR model with character tokens to improve the time-resolution. Then handle each word as single utterance.
+* *How do I get word-based alignments instead of full utterance segments?* Use an ASR model with character tokens to improve the time-resolution. Then handle each word as single utterance.
 
-* *The alignments are inaccurate.* Be aware that depending on the network, CTC activations are not always accurate, sometimes shifted by up to 10 frames (~200ms). To get a better time resolution, use a dictionary with characters! Also, the `prepare_text` function tries to break down long tokens into smaller tokens.
+* *How can I improve the accuracy of the generated alignments?* Be aware that depending on the ASR performance of network and other factors, CTC activations are not always accurate, sometimes shifted by a few frames. To get a better time resolution, use a dictionary with characters! Also, the `prepare_text` function tries to break down long tokens into smaller tokens. It's also practical to apply a threshold on the mean absolute (MA) signal, as described by [Bakhturina et al.](https://arxiv.org/abs/2104.04896)
 
 # Reference
 
