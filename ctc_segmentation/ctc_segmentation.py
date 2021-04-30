@@ -52,6 +52,7 @@ class CtcSegmentationParameters:
     replace_spaces_with_blanks = False
     blank_transition_cost_zero = False
     preamble_transition_cost_zero = True
+    backtrack_from_max_t = False
     self_transition = "ε"
     start_of_ground_truth = "#"
     excluded_characters = ".,-?!:»«;'›‹<>()•❍·"
@@ -130,7 +131,7 @@ def ctc_segmentation(config, lpz, ground_truth):
     :param ground_truth:  ground truth text in the form of a label sequence
     :return:
     """
-    blank = 0
+    blank = config.blank
     offset = 0
     audio_duration = lpz.shape[0] * config.index_duration_in_seconds
     logging.info(
@@ -159,6 +160,8 @@ def ctc_segmentation(config, lpz, ground_truth):
             config.blank,
             config.flags,
         )
+        if config.backtrack_from_max_t:
+            t = table.shape[0] - 1
         logging.debug(
             f"Max. joint probability to align text to audio: "
             f"{table[:, c].max()} at time index {t}"
