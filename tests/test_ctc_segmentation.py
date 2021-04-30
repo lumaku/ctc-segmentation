@@ -77,6 +77,13 @@ def test_prepare_text():
     gtm = list(ground_truth_mat.shape)
     assert gtm[0] == 11
     assert gtm[1] == 1
+    # test scan for longer tokens:
+    text = ["cat"]
+    char_list = ["•", "UNK", "a", "c", "t", "cat"]
+    ground_truth_mat, utt_begin_indices = prepare_text(config, text, char_list)
+    gtm = list(ground_truth_mat.shape)
+    assert gtm[0] == 6
+    assert gtm[1] == 3
 
 
 def test_prepare_tokenized_text():

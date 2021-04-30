@@ -51,6 +51,7 @@ class CtcSegmentationParameters:
     blank = 0
     replace_spaces_with_blanks = False
     blank_transition_cost_zero = False
+    preamble_transition_cost_zero = True
     self_transition = "ε"
     start_of_ground_truth = "#"
     excluded_characters = ".,-?!:»«;'›‹<>()•❍·"
@@ -80,6 +81,7 @@ class CtcSegmentationParameters:
     def flags(self):
         """Configuration flags to pass to the table_fill operation."""
         flags = int(self.blank_transition_cost_zero)
+        flags += 2 * int(self.preamble_transition_cost_zero)
         return flags
 
     def update_exluded_characters(self):

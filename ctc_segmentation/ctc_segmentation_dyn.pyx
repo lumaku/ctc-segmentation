@@ -49,6 +49,7 @@ def cython_fill_table(np.ndarray[np.float32_t, ndim=2] table,
     cdef float p
     cdef int s
     cdef int stay_transition_cost_zero
+    cdef int preamble_transition_cost_zero
 
     # Compute the mean offset between two window positions
     mean_offset = (lpz.shape[0] - table.shape[0]) / float(table.shape[1])
@@ -74,6 +75,8 @@ def cython_fill_table(np.ndarray[np.float32_t, ndim=2] table,
         last_max = 0
         # flag for setting stay transition cost to zero for blank
         stay_transition_cost_zero = (flags & 1) * int(np.any(ground_truth[c, :] == 0))
+        # flag for zero transition cost at preamble
+        preamble_transition_cost_zero = (flags & 2) * int(c==0)
         # Go through all rows of the current column
         for t in range((1 if c == 0 else 0), table.shape[0]):
             # Compute max switch probability
@@ -90,7 +93,7 @@ def cython_fill_table(np.ndarray[np.float32_t, ndim=2] table,
             # Compute stay probability
             if t - 1 < 0:
                 stay_prob = prob_max
-            elif c == 0:
+            elif preamble_transition_cost_zero:
                 stay_prob = 0
             elif stay_transition_cost_zero:
                 stay_prob = table[t - 1, c]
