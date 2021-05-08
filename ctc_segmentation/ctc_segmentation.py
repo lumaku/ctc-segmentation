@@ -382,6 +382,7 @@ def determine_utterance_segments(config, utt_begin_indices, char_probs, timings,
             return min(timings[index - 1] + 0.5, middle)
 
     segments = []
+    min_prob = np.float64(-10000000000.0)
     for i in range(len(text)):
         start = compute_time(utt_begin_indices[i], "begin")
         end = compute_time(utt_begin_indices[i + 1], "end")
@@ -390,12 +391,12 @@ def determine_utterance_segments(config, utt_begin_indices, char_probs, timings,
         # Compute confidence score by using the min mean probability
         #   after splitting into segments of L frames
         n = config.score_min_mean_over_L
-        if end_t == start_t:
-            min_avg = 0
+        if end_t <= start_t:
+            min_avg = min_prob
         elif end_t - start_t <= n:
             min_avg = char_probs[start_t:end_t].mean()
         else:
-            min_avg = 0
+            min_avg = np.float64(0.0)
             for t in range(start_t, end_t - n):
                 min_avg = min(min_avg, char_probs[t : t + n].mean())
         segments.append((start, end, min_avg))
