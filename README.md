@@ -3,6 +3,7 @@
 <!-- Badges -->
 [![build status](https://github.com/lumaku/ctc-segmentation/actions/workflows/python-package.yml/badge.svg)](https://github.com/lumaku/ctc-segmentation/actions/workflows/python-package.yml)
 [![version](https://img.shields.io/pypi/v/ctc-segmentation?style=plastic)](https://pypi.org/project/ctc-segmentation/)
+[![AUR](https://img.shields.io/aur/version/python-ctc-segmentation-git?style=plastic)](https://aur.archlinux.org/packages/python-ctc-segmentation-git)
 [![downloads](https://img.shields.io/pypi/dm/ctc-segmentation?style=plastic)](https://pypi.org/project/ctc-segmentation/)
 
 CTC segmentation can be used to find utterance alignments within large audio files.
@@ -16,7 +17,7 @@ CTC segmentation can be used to find utterance alignments within large audio fil
 The CTC segmentation package is not standalone, as it needs a neural network with CTC output. It is integrated in these frameworks:
 
 * In ESPnet 1 as corpus recipe: [Alignment script](https://github.com/espnet/espnet/blob/master/espnet/bin/asr_align.py), [Example recipe](https://github.com/espnet/espnet/tree/master/egs/tedlium2/align1), [Demo](https://github.com/espnet/espnet#ctc-segmentation-demo )
-* In ESPnet 2, as script or directly as python interface: [Alignment script](https://github.com/lumaku/espnet/blob/espnet2_ctc_segmentation/espnet2/bin/asr_align.py), [Demo](https://github.com/lumaku/espnet/tree/espnet2_ctc_segmentation#ctc-segmentation-demo )
+* In ESPnet 2, as script or directly as python interface: [Alignment script](https://github.com/espnet/espnet/blob/master/espnet2/bin/asr_align.py), [Demo](https://github.com/espnet/espnet#ctc-segmentation-demo )
 * In Nvidia NeMo as dataset creation tool: [Documentation](https://docs.nvidia.com/deeplearning/nemo/user-guide/docs/en/main/tools/ctc_segmentation.html), [Example](https://github.com/NVIDIA/NeMo/blob/main/tutorials/tools/CTC_Segmentation_Tutorial.ipynb)
 
 
