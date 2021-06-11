@@ -55,10 +55,10 @@ class CtcSegmentationParameters:
     backtrack_from_max_t = False
     self_transition = "ε"
     start_of_ground_truth = "#"
-    excluded_characters = ".,-?!:»«;'›‹<>()•❍·"
+    excluded_characters = ".,»«•❍·"
     tokenized_meta_symbol = "▁"
     char_list = None
-    # legacy Parameters (wil be ignored in future versions)
+    # legacy Parameters (will be ignored in future versions)
     subsampling_factor = None
     frame_duration_ms = None
 
@@ -85,7 +85,7 @@ class CtcSegmentationParameters:
         flags += 2 * int(self.preamble_transition_cost_zero)
         return flags
 
-    def update_exluded_characters(self):
+    def update_excluded_characters(self):
         """Remove known tokens from the list of excluded characters."""
         self.excluded_characters = "".join(
             [
