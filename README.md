@@ -20,6 +20,53 @@ The CTC segmentation package is not standalone, as it needs a neural network wit
 * In ESPnet 2, as script or directly as python interface: [Alignment script](https://github.com/espnet/espnet/blob/master/espnet2/bin/asr_align.py), [Demo](https://github.com/espnet/espnet#ctc-segmentation-demo )
 * In Nvidia NeMo as dataset creation tool: [Documentation](https://docs.nvidia.com/deeplearning/nemo/user-guide/docs/en/main/tools/ctc_segmentation.html), [Example](https://github.com/NVIDIA/NeMo/blob/main/tutorials/tools/CTC_Segmentation_Tutorial.ipynb)
 
+It can also be used with other frameworks:
+
+<details><summary>Wav2vec2 example code</summary><div>
+
+```python
+import torch, transformers, ctc_segmentation
+import soundfile
+# Load a wav2vec2 model, here: German model
+model_file = 'facebook/wav2vec2-large-xlsr-53-german'
+vocab_dict = {"<pad>": 0, "<s>": 1, "</s>": 2, "<unk>": 3, "|": 4, "E": 5, "N": 6, "I": 7, "S": 8, "R": 9, "T": 10, "A": 11, "H": 12, "D": 13, "U": 14, "L": 15, "C": 16, "G": 17, "M": 18, "O": 19, "B": 20, "W": 21, "F": 22, "K": 23, "Z": 24, "V": 25, "Ü": 26, "P": 27, "Ä": 28, "Ö": 29, "J": 30, "Y": 31, "'": 32, "X": 33, "Q": 34, "-": 35}
+processor = transformers.Wav2Vec2Processor.from_pretrained( model_file )
+model = transformers.Wav2Vec2ForCTC.from_pretrained( model_file )
+# Load audio file
+wav = "/path/to/german-audio.wav"
+speech_array, sampling_rate = soundfile.read( wav )
+assert sampling_rate == 16000
+# Generate a transcription, if not yet available
+# (Note that this will introduce errors if the model is wrong)
+features = processor(speech_array, sampling_rate=16000, return_tensors="pt")
+input_values = features.input_values
+attention_mask = features.attention_mask
+with torch.no_grad():
+    logits = model(input_values).logits
+predicted_ids = torch.argmax(logits, dim=-1)
+transcription = processor.batch_decode(predicted_ids)[0]
+# Split the transcription into words and handle as separate utterances
+text = transcription.split()
+# CTC log posteriors inference
+with torch.no_grad():
+    softmax = torch.nn.LogSoftmax(dim = -1)
+    lpz = softmax(logits)[0].cpu().numpy()
+# CTC segmentation preparation
+char_list = [x.lower() for x in vocab_dict.keys()]
+config = ctc_segmentation.CtcSegmentationParameters(char_list=char_list)
+config.index_duration = speech_array.shape[0] / lpz.shape[0] / sampling_rate
+# CTC segmentation
+ground_truth_mat, utt_begin_indices = ctc_segmentation.prepare_text(config, text)
+timings, char_probs, state_list = ctc_segmentation.ctc_segmentation(config, lpz, ground_truth_mat)
+segments = ctc_segmentation.determine_utterance_segments(config, utt_begin_indices, char_probs, timings, text)
+# print segments
+for word, segment in zip(text, segments):
+    print(f"{segment[0]:.2f} {segment[1]:.2f} {segment[2]:3.4f} {word}")
+```
+
+</div></details>
+
+
 
 # Installation
 
@@ -103,7 +150,7 @@ CTC segmentation requires CTC activations of an already trained CTC-based networ
 
 ### Steps to alignment for regular ASR
 
-1. `prepare_text` filters characters not in the dictionary, and generates the character matrix. Alternatively, use `prepare_token_list` if your text is already coverted to a squence of tokens.
+1. First, the ground truth text need to be converted into a matrix: Use `prepare_token_list` from a ground truth sequence that was already coverted to a sequence of tokens (recommended). Alternatively, use `prepare_text` on raw text, this method filters characters not in the dictionary and can break longer tokens into smaller tokens.
 2. `ctc_segmentation` computes character-wise alignments from the CTC log posterior probabilites.
 3. `determine_utterance_segments` converts char-wise alignments to utterance-wise alignments.
 4. In a post-processing step, segments may be filtered by their confidence value.
@@ -118,9 +165,10 @@ For examples, see the `prepare_*` functions in `ctc_segmentation.py`, or the exa
 
 Segments that were written to a `segments` file can be filtered using the confidence score. This is the minium confidence score in log space as described in the paper. 
 
-Utterances with a low confidence score are discarded in a data clean-up. This parameter may need adjustment depending on dataset, ASR model and language. For the German ASR model, a value of -1.5 worked very well; for TEDlium, a lower value of about -5.0 seemed more practical.
+Utterances with a low confidence score are discarded in a data clean-up. This parameter may need adjustment depending on dataset, ASR model and used text conversion.
 
 ```bash
+min_confidence_score=1.5
 awk -v ms=${min_confidence_score} '{ if ($5 > ms) {print} }' ${unfiltered} > ${filtered}
 ```
 
@@ -137,7 +185,217 @@ awk -v ms=${min_confidence_score} '{ if ($5 > ms) {print} }' ${unfiltered} > ${f
 
 * *How do I get word-based alignments instead of full utterance segments?* Use an ASR model with character tokens to improve the time-resolution. Then handle each word as single utterance.
 
-* *How can I improve the accuracy of the generated alignments?* Be aware that depending on the ASR performance of network and other factors, CTC activations are not always accurate, sometimes shifted by a few frames. To get a better time resolution, use a dictionary with characters! Also, the `prepare_text` function tries to break down long tokens into smaller tokens. It's also practical to apply a threshold on the mean absolute (MA) signal, as described by [Bakhturina et al.](https://arxiv.org/abs/2104.04896)
+* *How can I improve the accuracy of the generated alignments?* Be aware that depending on the ASR performance of network and other factors, CTC activations are not always accurate, sometimes shifted by a few frames. To get a better time resolution, use a dictionary with characters! Also, the `prepare_text` function tries to break down long tokens into smaller tokens.
+
+* *What is the difference between `prepare_token_list` and `prepare_text`?* Explained in examples:
+
+<details><summary>Example for `prepare_token_list`</summary><div>
+
+Let's say we have a text `text = ["cat"]` and a dictionary that includes the word cat as well as its parts: `char_list = ["•", "UNK", "a", "c", "t", "cat"]`.
+The "tokenize" method that uses the `preprocess_fn` will produce:
+
+```python
+text = ["cat"]
+char_list = ["•", "UNK", "a", "c", "t", "cat"]
+token_list = [tokenize(utt) for utt in text]
+token_list
+# [array([5])]
+ground_truth_mat, utt_begin_indices = prepare_token_list(config, text)
+ground_truth_mat
+# array([[-1],
+#        [ 0],
+#        [ 5],
+#        [ 0]])
+```
+
+</div></details>
+
+<details><summary>Example for `prepare_text`</summary><div>
+Toy example:
+
+```python
+text = ["cat"]
+char_list = ["•", "UNK", "a", "c", "t", "cat"]
+ground_truth_mat, utt_begin_indices = prepare_text(config, text, char_list)
+# array([[-1, -1, -1],
+#        [ 0, -1, -1],
+#        [ 3, -1, -1],
+#        [ 2, -1, -1],
+#        [ 4, -1,  5],
+#        [ 0, -1, -1]])
+```
+
+Here, the partial characters are detected (3,2,4), as well as the full "cat" token (5).
+This is done to have a better time resolution for the alignment.
+
+Full example with a bpe 500 model char list from Tedlium 2:
+
+```python
+
+from ctc_segmentation import CtcSegmentationParameters
+from ctc_segmentation import prepare_text
+
+char_list = [ "<unk>", "'", "a", "ab", "able", "ace", "ach", "ack",
+"act","ad","ag", "age", "ain", "al", "alk", "all", "ally", "am",
+"ame", "an","and", "ans", "ant", "ap", "ar", "ard", "are",
+"art","as", "ase","ass", "ast", "at", "ate", "ated", "ater", "ation",
+"ations", "ause","ay", "b", "ber", "ble", "c", "ce", "cent",
+"ces","ch", "ci", "ck","co", "ct", "d", "de", "du", "e", "ear",
+"ect", "ed", "een", "el","ell", "em", "en", "ence", "ens",
+"ent","enty", "ep", "er", "ere","ers", "es", "ess", "est", "et", "f",
+"fe", "ff", "g", "ge", "gh","ght", "h", "her", "hing", "ht",
+"i","ia", "ial", "ib", "ic","ical", "ice", "ich", "ict", "id", "ide",
+"ie", "ies", "if","iff","ig", "ight", "ign", "il", "ild", "ill","im",
+"in", "ind","ine", "ing", "ink", "int", "ion", "ions", "ip",
+"ir","ire","is","ish", "ist", "it", "ite", "ith", "itt", "ittle",
+"ity", "iv","ive", "ix", "iz", "j", "k", "ke", "king", "l",
+"ld","le","ll","ly", "m", "ment", "ms", "n", "nd", "nder", "nt", "o",
+"od","ody", "og", "ol", "olog", "om", "ome", "on",
+"one","ong","oo","ood", "ook", "op", "or", "ore", "orm", "ort",
+"ory", "os","ose", "ot", "other", "ou", "ould", "ound",
+"ount","our","ous","ousand", "out", "ow", "own", "p", "ph", "ple",
+"pp", "pt","q", "qu", "r", "ra", "rain", "re", "reat", "red",
+"ree","res","ro","rou", "rough", "round", "ru", "ry", "s", "se",
+"sel", "so","st","t", "ter", "th", "ther", "ty", "u", "ually",
+"ud","ue", "ul","ult", "um", "un", "und", "ur", "ure", "us", "use",
+"ust", "ut","v","ve", "vel", "ven", "ver", "very", "ves", "ving","w",
+"way","x", "y", "z", "ăť", "ō", "▁", "▁a", "▁ab",
+"▁about","▁ac","▁act","▁actually", "▁ad", "▁af", "▁ag", "▁al",
+"▁all", "▁also","▁am", "▁an", "▁and", "▁any", "▁ar",
+"▁are","▁around", "▁as","▁at","▁b", "▁back", "▁be", "▁bec",
+"▁because", "▁been", "▁being","▁bet", "▁bl", "▁br", "▁bu",
+"▁but","▁by", "▁c", "▁call","▁can","▁ch", "▁chan", "▁cl", "▁co",
+"▁com", "▁comm", "▁comp","▁con", "▁cont", "▁could", "▁d",
+"▁day","▁de", "▁des","▁did","▁diff", "▁differe", "▁different",
+"▁dis", "▁do", "▁does","▁don", "▁down", "▁e", "▁en",
+"▁even","▁every", "▁ex", "▁exp","▁f","▁fe", "▁fir", "▁first",
+"▁five", "▁for", "▁fr", "▁from", "▁g","▁get", "▁go",
+"▁going","▁good", "▁got", "▁h", "▁ha","▁had","▁happ", "▁has",
+"▁have", "▁he", "▁her", "▁here", "▁his","▁how", "▁hum",
+"▁hundred","▁i", "▁ide", "▁if", "▁im", "▁imp","▁in","▁ind", "▁int",
+"▁inter", "▁into", "▁is", "▁it", "▁j", "▁just","▁k","▁kind",
+"▁kn","▁know", "▁l", "▁le", "▁let", "▁li", "▁life","▁like",
+"▁little", "▁lo", "▁look", "▁lot", "▁m",
+"▁ma","▁make","▁man","▁many", "▁may", "▁me", "▁mo", "▁more",
+"▁most","▁mu", "▁much", "▁my", "▁n", "▁ne", "▁need", "▁new",
+"▁no","▁not","▁now", "▁o", "▁of", "▁on", "▁one","▁only", "▁or",
+"▁other", "▁our","▁out", "▁over", "▁p", "▁part", "▁pe",
+"▁peop","▁people","▁per","▁ph", "▁pl", "▁po", "▁pr", "▁pre", "▁pro",
+"▁put", "▁qu", "▁r","▁re", "▁real", "▁really", "▁res",
+"▁right","▁ro", "▁s","▁sa","▁said", "▁say", "▁sc", "▁se", "▁see",
+"▁sh", "▁she", "▁show", "▁so","▁som", "▁some", "▁somet","▁something",
+"▁sp","▁spe", "▁st","▁start", "▁su", "▁sy", "▁t", "▁ta",
+"▁take","▁talk", "▁te","▁th","▁than", "▁that", "▁the", "▁their",
+"▁them", "▁then", "▁there","▁these", "▁they", "▁thing",
+"▁things","▁think", "▁this","▁those","▁thousand", "▁three",
+"▁through", "▁tim", "▁time", "▁to", "▁tr","▁tw", "▁two", "▁u",
+"▁un","▁under", "▁up", "▁us","▁v", "▁very","▁w", "▁want", "▁was",
+"▁way", "▁we", "▁well", "▁were","▁wh","▁what", "▁when",
+"▁where","▁which", "▁who", "▁why", "▁will","▁with", "▁wor", "▁work",
+"▁world", "▁would", "▁y","▁year","▁years", "▁you", "▁your"]
+
+text = ["I ▁really ▁like ▁technology",
+ "The ▁quick ▁brown ▁fox ▁jumps ▁over ▁the ▁lazy ▁dog.",
+ "unknown chars äüößß-!$ "]
+config = CtcSegmentationParameters()
+config.char_list = char_list
+ground_truth_mat, utt_begin_indices = prepare_text(config, text)
+
+# ground_truth_mat
+# array([[ -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1],
+#        [  0,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1],
+#        [244,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1],
+#        [190, 410,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1],
+#        [ 55, 193, 411,  -1,  -1,  -1,  -1,  -1,  -1,  -1],
+#        [  2,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1],
+#        [137,  13,  -1,  -1, 412,  -1,  -1,  -1,  -1,  -1],
+#        [137, 140,  15,  -1,  -1,  -1,  -1,  -1,  -1,  -1],
+#        [240, 141,  -1,  16,  -1,  -1, 413,  -1,  -1,  -1],
+#        [244,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1],
+#        [137, 356,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1],
+#        [ 87,  -1, 359,  -1,  -1,  -1,  -1,  -1,  -1,  -1],
+#        [134,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1],
+#        [ 55, 135,  -1,  -1, 361,  -1,  -1,  -1,  -1,  -1],
+#        [244,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1],
+#        [209, 438,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1],
+#        [ 55,  -1, 442,  -1,  -1,  -1,  -1,  -1,  -1,  -1],
+#        [ 43,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1],
+#        [ 83,  47,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1],
+#        [145,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1],
+#        [149,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1],
+#        [137, 153,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1],
+#        [149,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1],
+#        [ 79, 152,  -1, 154,  -1,  -1,  -1,  -1,  -1,  -1],
+#        [240,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1],
+#        [  0,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1],
+#        [ 83,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1],
+#        [ 55,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1],
+#        [244,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1],
+#        [188,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1],
+#        [214, 189, 409,  -1,  -1,  -1,  -1,  -1,  -1,  -1],
+#        [ 87,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1],
+#        [ 43,  91,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1],
+#        [134,  49,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1],
+#        [244,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1],
+#        [ 40, 266,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1],
+#        [190,  -1, 275,  -1,  -1,  -1,  -1,  -1,  -1,  -1],
+#        [149, 198,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1],
+#        [237, 181,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1],
+#        [145,  -1, 182,  -1,  -1,  -1,  -1,  -1,  -1,  -1],
+#        [244,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1],
+#        [ 76, 311,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1],
+#        [149,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1],
+#        [239,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1],
+#        [244,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1],
+#        [133, 350,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1],
+#        [214,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1],
+#        [142, 220,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1],
+#        [183,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1],
+#        [204,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1],
+#        [244,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1],
+#        [149, 386,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1],
+#        [229,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1],
+#        [ 55, 230,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1],
+#        [190,  69, 233,  -1, 395,  -1,  -1,  -1,  -1,  -1],
+#        [244,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1],
+#        [209, 438,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1],
+#        [ 83, 211, 443,  -1,  -1,  -1,  -1,  -1,  -1,  -1],
+#        [ 55,  -1,  -1, 446,  -1,  -1,  -1,  -1,  -1,  -1],
+#        [244,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1],
+#        [137, 356,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1],
+#        [  2,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1],
+#        [241,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1],
+#        [240,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1],
+#        [244,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1],
+#        [ 52, 292,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1],
+#        [149,  -1, 301,  -1,  -1,  -1,  -1,  -1,  -1,  -1],
+#        [ 79, 152,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1],
+#        [  0,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1],
+#        [214,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1],
+#        [145, 221,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1],
+#        [134,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1],
+#        [145,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1],
+#        [149,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1],
+#        [237, 181,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1],
+#        [145,  -1, 182,  -1,  -1,  -1,  -1,  -1,  -1,  -1],
+#        [ 43,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1],
+#        [ 83,  47,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1],
+#        [  2,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1],
+#        [190,  24,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1],
+#        [204,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1],
+#        [  0,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1]])
+```
+
+In the example, parts of the word "▁really" were separated into the token ids: [244, 410, 411, 412, 413]
+This corresponds to `['▁', '▁r', '▁re', '▁real', '▁really']`
+
+The CTC segmentation algorithm then iterates over these tokens in the ground truth, calculates the transition probabilities for each token from `lpz` and decides for the transition(s) with the token combination that has the highest accumulated transition probability.
+
+</div></details>
+
+
+* *Sometimes the end of the last utterance is cut short. How do I solve this?* This is a known issue and strongly depends on used ASR model. A possible solution might be to just add a few milliseconds to the end of the last utterance. It's also practical to apply a threshold on the mean absolute (MA) signal, as described by [Bakhturina et al.](https://arxiv.org/abs/2104.04896).
+
 
 # Reference
 
