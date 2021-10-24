@@ -6,7 +6,7 @@
 
 """Test functions for partitioning helper functions."""
 
-from .partitioning import get_partitions
+from ctc_segmentation import get_partitions
 
 
 def test_get_partitions():
