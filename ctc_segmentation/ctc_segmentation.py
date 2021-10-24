@@ -80,7 +80,7 @@ class CtcSegmentationParameters:
 
     @property
     def flags(self):
-        """Configuration flags to pass to the table_fill operation."""
+        """Get configuration flags to pass to the table_fill operation."""
         flags = int(self.blank_transition_cost_zero)
         flags += 2 * int(self.preamble_transition_cost_zero)
         return flags
@@ -97,6 +97,7 @@ class CtcSegmentationParameters:
         logging.debug(f"Excluded characters: {self.excluded_characters}")
 
     def __init__(self, **kwargs):
+        """Set all parameters as attribute at init."""
         self.set(**kwargs)
 
     def set(self, **kwargs):
@@ -115,6 +116,7 @@ class CtcSegmentationParameters:
                 setattr(self, key, kwargs[key])
 
     def __repr__(self):
+        """Print all attribute as dictionary."""
         output = "CtcSegmentationParameters( "
         for attribute in self.__dict__.keys():
             value = self.__dict__[attribute]

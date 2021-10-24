@@ -16,7 +16,9 @@ from ctc_segmentation import prepare_token_list
 
 
 def test_ctcsegmentationparameters():
-    # test repr and init
+    """Test the configuration object.
+    Test repr and init.
+    """
     config = CtcSegmentationParameters()
     config = eval(str(config))
     assert config.index_duration_in_seconds == 0.025
