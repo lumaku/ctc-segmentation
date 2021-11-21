@@ -158,7 +158,7 @@ def ctc_segmentation(config, lpz, ground_truth):
             table,
             lpz.astype(np.float32),
             np.array(ground_truth, dtype=np.int64),
-            np.array(offsets, dtype=np.int64),
+            offsets,
             config.blank,
             config.flags,
         )
