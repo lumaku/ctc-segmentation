@@ -1,14 +1,6 @@
 from setuptools import setup, find_packages, Extension
-from setuptools.command.build_ext import build_ext as _build_ext
-
-
-class build_ext(_build_ext):
-    def finalize_options(self):
-        _build_ext.finalize_options(self)
-        # Prevent numpy from thinking it is still in its setup process:
-        __builtins__.__NUMPY_SETUP__ = False
-        import numpy
-        self.include_dirs.append(numpy.get_include())
+from setuptools.command.build_ext import build_ext
+import numpy
 
 
 try:
@@ -20,8 +12,12 @@ except ImportError:
 # https://cython.readthedocs.io/en/latest/src/userguide/source_files_and_compilation.html
 ext = '.pyx' if USE_CYTHON else '.c'
 extensions = [
-    Extension("ctc_segmentation.ctc_segmentation_dyn",
-             ["ctc_segmentation/ctc_segmentation_dyn"+ext])]
+    Extension(
+        name="ctc_segmentation.ctc_segmentation_dyn",
+        include_dirs=[numpy.get_include()],
+        sources=["ctc_segmentation/ctc_segmentation_dyn"+ext]
+    )
+]
 if USE_CYTHON:
     from Cython.Build import cythonize
     extensions = cythonize(extensions)
