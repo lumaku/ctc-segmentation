@@ -14,8 +14,8 @@ ext = '.pyx' if USE_CYTHON else '.c'
 extensions = [
     Extension(
         name="ctc_segmentation.ctc_segmentation_dyn",
+        sources=["ctc_segmentation/ctc_segmentation_dyn"+ext],
         include_dirs=[numpy.get_include()],
-        sources=["ctc_segmentation/ctc_segmentation_dyn"+ext]
     )
 ]
 if USE_CYTHON:
