@@ -19,11 +19,16 @@ test:
 	cd tests; python -c "import test_ctc_segmentation as test; test.test_prepare_tokenized_text()"
 	cd tests; python -c "import test_ctc_segmentation as test; test.test_prepare_token_list()"
 
+
+# To test the various installation methods:
 github:
 	cd /; pip install git+https://github.com/lumaku/ctc-segmentation --user
 	
 pip:
 	cd /; pip install ctc-segmentation --user
+
+local:
+	pip install . --user
 
 rm:
 	cd /; pip uninstall -y ctc-segmentation
