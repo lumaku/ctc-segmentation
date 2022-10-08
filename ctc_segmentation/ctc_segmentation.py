@@ -20,6 +20,8 @@ https://link.springer.com/chapter/10.1007%2F978-3-030-60276-5_27
 import logging
 import numpy as np
 
+logger = logging.getLogger("ctc_segmentation")
+
 # import for table of character probabilities mapped to time
 try:
     from .ctc_segmentation_dyn import cython_fill_table
@@ -94,7 +96,7 @@ class CtcSegmentationParameters:
                 if True not in [char == j for j in self.char_list]
             ]
         )
-        logging.debug(f"Excluded characters: {self.excluded_characters}")
+        logger.debug(f"Excluded characters: {self.excluded_characters}")
 
     def __init__(self, **kwargs):
         """Set all parameters as attribute at init."""
@@ -136,7 +138,7 @@ def ctc_segmentation(config, lpz, ground_truth):
     blank = config.blank
     offset = 0
     audio_duration = lpz.shape[0] * config.index_duration_in_seconds
-    logging.info(
+    logger.info(
         f"CTC segmentation of {len(ground_truth)} chars "
         f"to {audio_duration:.2f}s audio "
         f"({lpz.shape[0]} indices)."
@@ -164,7 +166,7 @@ def ctc_segmentation(config, lpz, ground_truth):
         )
         if config.backtrack_from_max_t:
             t = table.shape[0] - 1
-        logging.debug(
+        logger.debug(
             f"Max. joint probability to align text to audio: "
             f"{table[:, c].max()} at time index {t}"
         )
@@ -218,17 +220,17 @@ def ctc_segmentation(config, lpz, ground_truth):
                     state_list[offsets[c] + t] = config.self_transition
                     t -= 1
         except IndexError:
-            logging.warning(
+            logger.warning(
                 "IndexError: Backtracking was not successful, "
                 "the window size might be too small."
             )
             window_size *= 2
             if window_size < config.max_window_size:
-                logging.warning("Increasing the window size to: " + str(window_size))
+                logger.warning("Increasing the window size to: " + str(window_size))
                 continue
             else:
-                logging.error("Maximum window size reached.")
-                logging.error("Check data and character list!")
+                logger.error("Maximum window size reached.")
+                logger.error("Check data and character list!")
                 raise
         break
     return timings, char_probs, state_list
@@ -270,7 +272,7 @@ def prepare_text(config, text, char_list=None):
     # Add space to the end
     if not ground_truth.endswith(config.space):
         ground_truth += config.space
-    logging.debug(f"ground_truth: {ground_truth}")
+    logger.debug(f"ground_truth: {ground_truth}")
     utt_begin_indices.append(len(ground_truth) - 1)
     # Create matrix: time frame x number of letters the character symbol spans
     max_char_len = max([len(c) for c in config.char_list])
@@ -313,7 +315,7 @@ def prepare_tokenized_text(config, text):
     # Add space to the end
     if not ground_truth[-1] == config.space:
         ground_truth += [config.space]
-    logging.debug(f"ground_truth: {ground_truth}")
+    logger.debug(f"ground_truth: {ground_truth}")
     utt_begin_indices.append(len(ground_truth) - 1)
     # Create matrix: time frame x number of letters the character symbol spans
     max_char_len = 1
@@ -352,7 +354,7 @@ def prepare_token_list(config, text):
     # Add a blank to the end
     if not ground_truth[-1] == config.blank:
         ground_truth += [config.blank]
-    logging.debug(f"ground_truth: {ground_truth}")
+    logger.debug(f"ground_truth: {ground_truth}")
     utt_begin_indices.append(len(ground_truth) - 1)
     # Create matrix: time frame x number of letters the character symbol spans
     ground_truth_mat = np.array(ground_truth, dtype=np.int64).reshape(-1, 1)
