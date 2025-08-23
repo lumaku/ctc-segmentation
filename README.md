@@ -1,7 +1,7 @@
 # CTC segmentation
 
 <!-- Badges -->
-[![build status](https://github.com/lumaku/ctc-segmentation/actions/workflows/python-package.yml/badge.svg)](https://github.com/lumaku/ctc-segmentation/actions/workflows/python-package.yml)
+[![build status](https://github.com/espnet/ctc-segmentation/actions/workflows/python-package.yml/badge.svg)](https://github.com/espnet/ctc-segmentation/actions/workflows/python-package.yml)
 [![version](https://img.shields.io/pypi/v/ctc-segmentation)](https://pypi.org/project/ctc-segmentation/)
 [![AUR](https://img.shields.io/aur/version/python-ctc-segmentation-git)](https://aur.archlinux.org/packages/python-ctc-segmentation-git)
 [![downloads](https://img.shields.io/pypi/dm/ctc-segmentation)](https://pypi.org/project/ctc-segmentation/)
@@ -19,7 +19,7 @@ The CTC segmentation package is not standalone, as it needs a neural network wit
 * In ESPnet 1 as corpus recipe: [Alignment script](https://github.com/espnet/espnet/blob/master/espnet/bin/asr_align.py), [Example recipe](https://github.com/espnet/espnet/tree/master/egs/tedlium2/align1), [Demo](https://github.com/espnet/espnet#ctc-segmentation-demo )
 * In ESPnet 2, as script or directly as python interface: [Alignment script](https://github.com/espnet/espnet/blob/master/espnet2/bin/asr_align.py), [Demo](https://github.com/espnet/espnet#ctc-segmentation-demo )
 * In Nvidia NeMo as dataset creation tool: [Documentation](https://docs.nvidia.com/deeplearning/nemo/user-guide/docs/en/main/tools/ctc_segmentation.html), [Example](https://github.com/NVIDIA/NeMo/blob/main/tutorials/tools/CTC_Segmentation_Tutorial.ipynb)
-* In Speechbrain, as python interface: [Alignment module](https://github.com/speechbrain/speechbrain/blob/develop/speechbrain/alignment/ctc_segmentation.py), [Examples](https://gist.github.com/lumaku/75eca1c86d9467a54888d149dc7b84f1)
+* In Speechbrain, as python interface: [Alignment module](https://github.com/speechbrain/speechbrain/blob/develop/speechbrain/alignment/ctc_segmentation.py), [Examples](https://gist.github.com/espnet/75eca1c86d9467a54888d149dc7b84f1)
 
 It can also be used with other frameworks:
 
@@ -145,7 +145,7 @@ pip install ctc-segmentation
 
 * From source:
 ```sh
-git clone https://github.com/lumaku/ctc-segmentation
+git clone https://github.com/espnet/ctc-segmentation
 cd ctc-segmentation
 cythonize -3 ctc_segmentation/ctc_segmentation_dyn.pyx
 python setup.py build

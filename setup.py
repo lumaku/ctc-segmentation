@@ -29,14 +29,14 @@ CTC segmentation is used to align utterances within audio files.
 It can be combined with CTC-based ASR models.
 This package includes the core functions.
 
-https://github.com/lumaku/ctc-segmentation
+https://github.com/espnet/ctc-segmentation
 """
 
 setup(
     name="ctc_segmentation",
-    version="1.7.4",
+    version="1.7.5",
 
-    python_requires='>=3.6',
+    python_requires='>=3.9',
     packages=find_packages(exclude=["tests"]),
     setup_requires=["numpy"],
     install_requires=["setuptools", "numpy", "Cython"],
@@ -49,7 +49,7 @@ setup(
            "Dominik Winkelbauer <dominik.winkelbauer@tum.de>",
     description="CTC segmentation to align utterances within "
                 "large audio files.",
-    url="https://github.com/lumaku/ctc-segmentation",
+    url="https://github.com/espnet/ctc-segmentation",
 
     long_description_content_type="text/markdown",
     long_description=package_information,
