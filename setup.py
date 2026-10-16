@@ -34,7 +34,7 @@ https://github.com/lumaku/ctc-segmentation
 
 setup(
     name="ctc_segmentation",
-    version="1.7.4",
+    version="1.7.5",
 
     python_requires='>=3.6',
     packages=find_packages(exclude=["tests"]),
