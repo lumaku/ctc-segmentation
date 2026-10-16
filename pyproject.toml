@@ -1,2 +1,5 @@
 [build-system]
-requires = ["wheel", "setuptools", "numpy", "Cython"]
+# Building against NumPy >= 2 yields an extension that is ABI-compatible with
+# both NumPy 1.x and 2.x at run time (see NumPy docs, "NumPy 2.0 migration").
+requires = ["setuptools>=61", "wheel", "numpy>=2.0", "Cython>=3.0"]
+build-backend = "setuptools.build_meta"

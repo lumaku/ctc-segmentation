@@ -1,5 +1,5 @@
-# This workflow will install Python dependencies, run tests and lint with a variety of Python versions
-# For more information see: https://help.github.com/actions/language-and-framework-guides/using-python-with-github-actions
+# Build the package and run the tests with a variety of Python and NumPy versions
+# For more information see: https://docs.github.com/en/actions/use-cases-and-examples/building-and-testing/building-and-testing-python
 
 name: Python package
 
@@ -10,24 +10,57 @@ on:
     branches: [ master ]
 
 jobs:
-  build:
-
+  test:
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
-        python-version: ['3.7', '3.8', '3.9', '3.10']
+        python-version: ['3.9', '3.10', '3.11', '3.12', '3.13', '3.14']
+        numpy-version: ['numpy>=2']
+        include:
+          # The extension is always built against NumPy 2 (see pyproject.toml),
+          # but must also import under NumPy 1.x at run time.
+          - python-version: '3.9'
+            numpy-version: 'numpy<2'
+          - python-version: '3.12'
+            numpy-version: 'numpy<2'
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v5
     - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v6
       with:
         python-version: ${{ matrix.python-version }}
-    - name: Install dependencies
+    - name: Install package
       run: |
         python -m pip install --upgrade pip
-        python -m pip install .
-        pip install flake8 pytest wheel torch
-    - name: Test with pytest
+        python -m pip install ".[test]"
+        python -m pip install "${{ matrix.numpy-version }}"
+    - name: Check that the compiled extension is used
+      # run outside of the source tree so that the installed package is imported
+      working-directory: ${{ runner.temp }}
       run: |
-        pytest
+        python -c "import numpy; print('NumPy', numpy.__version__)"
+        python -c "import ctc_segmentation.ctc_segmentation_dyn as m; print(m.__file__); assert not m.__file__.endswith('.pyx')"
+    - name: Test with pytest
+      # importlib mode keeps the source tree off sys.path, so the installed package is tested
+      run: |
+        pytest --import-mode=importlib
+
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v5
+    - uses: actions/setup-python@v6
+      with:
+        python-version: '3.13'
+    - name: Build sdist and wheel
+      run: |
+        python -m pip install --upgrade pip build twine
+        python -m build
+        python -m twine check dist/*
+    - name: Install from sdist
+      working-directory: ${{ runner.temp }}
+      run: |
+        python -m pip install ${{ github.workspace }}/dist/*.tar.gz
+        python -c "import ctc_segmentation; print(ctc_segmentation.__file__)"
