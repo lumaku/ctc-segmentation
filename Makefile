@@ -1,23 +1,22 @@
 # Makefile for CTC segmentation
 # Ludwig Kürzinger, 2021
 
+# Build sdist and wheel in an isolated environment (needs `pip install build`).
+# Cython runs automatically during the build, as declared in pyproject.toml.
 all:
-	cythonize -3 ctc_segmentation/ctc_segmentation_dyn.pyx
-	python setup.py sdist
+	python -m build
 
 clean:
 	rm ctc_segmentation/ctc_segmentation_dyn.c || echo "already clean?"
 	rm -rf build/ dist/ ctc_segmentation.egg-info/ || echo "already clean?"
 
 upload:
+	twine check dist/*
 	twine upload dist/*
-  
+
+# Tests the installed package (e.g. after `make local`), like the CI does.
 test:
-	cd tests; python -c "import test_ctc_segmentation as test; test.test_ctc_segmentation()"
-	cd tests; python -c "import test_ctc_segmentation as test; test.test_determine_utterance_segments()"
-	cd tests; python -c "import test_ctc_segmentation as test; test.test_prepare_text()"
-	cd tests; python -c "import test_ctc_segmentation as test; test.test_prepare_tokenized_text()"
-	cd tests; python -c "import test_ctc_segmentation as test; test.test_prepare_token_list()"
+	pytest --import-mode=importlib
 
 
 # To test the various installation methods:
