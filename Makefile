@@ -10,9 +10,10 @@ clean:
 	rm ctc_segmentation/ctc_segmentation_dyn.c || echo "already clean?"
 	rm -rf build/ dist/ ctc_segmentation.egg-info/ || echo "already clean?"
 
+# Only the sdist is uploaded: PyPI rejects wheels tagged linux_x86_64.
 upload:
 	twine check dist/*
-	twine upload dist/*
+	twine upload dist/*.tar.gz
 
 # Tests the installed package (e.g. after `make local`), like the CI does.
 test:
